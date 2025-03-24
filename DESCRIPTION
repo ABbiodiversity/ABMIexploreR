@@ -1,0 +1,24 @@
+Encoding: UTF-8
+Package: ABMIExploreR
+Type: Package
+Title: Custom Predictions using ABMI species distribution models in Alberta
+Version: 1.0-0
+Date: 2025-05-01
+Author: Brandon Allen[cre, aut], Elly Knight [aut], Marcus Becker [aut],
+  ABMI [cph], BAM [cph]
+Maintainer: Brandon Allen <brandon.allen@ualberta.ca>
+Description: Decision support tool
+  that provides an interface to enable
+  custom predictions based on species distribution models created by the Alberta
+  Biodiversity Monitoring Institute (ABMI)
+  in collaboration with the Boreal Avian Modelling (BAM) Project.
+URL: https://github.com/beallen/ABMIexploreR
+BugReports: https://github.com/beallen/ABMIexploreR/issues
+License: MIT + file LICENSE
+LazyLoad: yes
+LazyData: true
+Depends: R (>= 3.5.0), Matrix
+Imports: methods
+Suggests: knitr, rmarkdown, mefa4
+VignetteBuilder: knitr
+RoxygenNote: 7.2.3
