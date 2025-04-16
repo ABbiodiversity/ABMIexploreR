@@ -10,273 +10,275 @@ if (!require("remotes"))
 remotes::install_github("ABbiodiversity/ABMIexploreR")
 ```
 
-You will need data and coefficients from the
-[ABbiodiversity/ABMIexploreR-data](https://github.com/ABbiodiversity/ABMIexploreR-data)
-repository. Clone or download the contents in zip format and extract
-into a folder (`dir` in the example).
-
-``` r
-dir <- "~/repos/ABMIexploreR-data"
-```
-
-If you don’t need the spatial raster files from the
-ABbiodiversity/allinone-coefs, the `ai_download_coefs()` function will
-grab the coefficients for you and you’ll be ready to roll:
+The bioclimatic rasters are downloaded alongside the package, but need to be loaded into memory before users can make predictions.
 
 ``` r
 library(ABMIexploreR)
 
-#ai_dowload_coefs()
+abmi_load_bioclimatic()
 
-ai_load_coefs()
-## [INFO] Loading coefs
 ```
 
-## Command line usage
+## Lookup tables
 
-See all the 1050 species that we have coefficients for:
+### Species information
+
+The lookup table providing information on taxonomic group, model region (e.g., vegetation and or soil), and model fit can be extracted from the abmi_species() function.
 
 ``` r
-tab <- ai_species()
-str(tab)
-## 'data.frame':    1050 obs. of  21 variables:
-##  $ SpeciesID     : chr  "Bryoria.fuscescens.glabra.lanestris.vrangiana" "Candelaria.pacifica" "Cetraria.aculeata.muricata" "Cetraria.arenaria" ...
-##  $ ScientificName: chr  "Bryoria fuscescens/glabra/lanestris/vrangiana" "Candelaria pacifica" "Cetraria aculeata/muricata" "Cetraria arenaria" ...
-##  $ TSNID         : chr  "99002220" "99002875" "98283083" "99002154" ...
-##  $ CommonName    : chr  NA NA NA NA ...
-##  $ ModelNorth    : logi  TRUE FALSE FALSE FALSE FALSE TRUE ...
-##  $ ModelSouth    : logi  TRUE TRUE TRUE TRUE TRUE TRUE ...
-##  $ UseavailNorth : logi  FALSE TRUE TRUE FALSE TRUE FALSE ...
-##  $ UseavailSouth : logi  FALSE FALSE FALSE FALSE FALSE FALSE ...
-##  $ Occurrences   : int  2719 213 151 58 75 1921 1968 2231 2055 402 ...
-##  $ nSites        : int  1028 148 73 28 58 846 1006 1008 887 197 ...
-##  $ SizeNorth     : logi  NA NA NA NA NA NA ...
-##  $ SizeSouth     : logi  NA NA NA NA NA NA ...
-##  $ Nonnative     : logi  FALSE FALSE FALSE FALSE FALSE FALSE ...
-##  $ LinkHabitat   : chr  "logit" "logit" "logit" "logit" ...
-##  $ LinkSpclim    : chr  "logit" "logit" "logit" "logit" ...
-##  $ AUCNorth      : num  0.926 0.808 NA NA 0.785 0.864 0.797 0.844 0.869 NA ...
-##  $ AUCSouth      : num  0.912 0.881 0.911 0.936 0.879 0.918 0.834 0.926 0.888 0.871 ...
-##  $ R2North       : num  0.494 0.15 NA NA 0.09 0.336 0.214 0.3 0.352 NA ...
-##  $ R2South       : num  0.356 0.236 0.327 0.359 0.188 0.306 0.213 0.4 0.221 0.297 ...
-##  $ Comments      : chr  NA NA NA NA ...
-##  $ Group         : chr  "lichens" "lichens" "lichens" "lichens" ...
+species.lookup <- abmi_species()
+str(species.lookup)
+# 'data.frame':	909 obs. of  21 variables:
+#  $ SpeciesID           : chr  "WETO" "CATO" "BCFR" "WOFR" ...
+#  $ ScientificName      : chr  "Bufo boreas" "Bufo hemiophrys" "Pseudacris maculata" "Rana sylvatica" ...
+#  $ TSNID               : chr  "773513" "773521" "99005527" "775117" ...
+#  $ CommonName          : chr  "Western Toad" "Canadian Toad" "Boreal Chorus Frog" "Wood Frog" ...
+#  $ Rank                : chr  "Species" "Species" "Species" "Species" ...
+#  $ Taxon               : chr  "Amphibians" "Amphibians" "Amphibians" "Amphibians" ...
+#  $ Nonnative           : chr  NA NA NA NA ...
+#  $ Occurrences         : int  117 53 636 421 163 1906 289 53 2123 100 ...
+#  $ nSites              : int  117 53 636 421 102 956 194 46 948 48 ...
+#  $ UseAvailabilityNorth: logi  FALSE FALSE FALSE FALSE TRUE TRUE ...
+#  $ UseAvailabilitySouth: logi  FALSE FALSE FALSE FALSE TRUE TRUE ...
+#  $ ModelNorth          : logi  TRUE TRUE TRUE TRUE TRUE TRUE ...
+#  $ ModelSouth          : logi  FALSE FALSE TRUE TRUE TRUE TRUE ...
+#  $ LinkHabitat         : chr  "logit" "logit" "logit" "logit" ...
+#  $ LinkSpclim          : chr  "logit" "logit" "logit" "logit" ...
+#  $ AUCSpclimNorth      : num  0.862 0.917 0.764 0.722 0.808 ...
+#  $ AUCVegHFNorth       : num  0.742 0.728 0.731 0.64 0.755 ...
+#  $ AUCVegHFSpclimNorth : num  0.819 0.796 0.753 0.658 0.846 ...
+#  $ AUCSpclimSouth      : num  NA NA NA NA 0.808 ...
+#  $ AUCVegHFSouth       : num  NA NA NA NA 0.661 ...
+#  $ AUCVegHFSpclimSouth : num  NA NA NA NA 0.751 ...
 ```
 
-Here is the number of species by groups:
+Here is the number of species by taxonomic group available in the package:
 
 ``` r
-data.frame(table(tab$Group))
-##       Var1 Freq
-## 1    birds  127
-## 2 habitats   45
-## 3  lichens  164
-## 4  mammals   19
-## 5    mites  118
-## 6   mosses  120
-## 7 nnplants    1
-## 8  vplants  456
+data.frame(table(species.lookup$Taxon))
+#             Var1 Freq
+# 1     Amphibians    4
+# 2     Bryophytes  133
+# 3        Lichens  185
+# 4      SoilMites  125
+# 5 VascularPlants  462
 ```
 
-### Predictor data
+### Bioclimatic information
+The bioclimatic variables used in our hierarchical models can be viewed as both a lookup table, or visualized to see the spatial distribution of these variables across Alberta.
 
-We use an example data set that shows you how to organize the data:
+``` r
+# Bioclimatic data
+str(abmi_climate())
+# 'data.frame':	20 obs. of  2 variables:
+#  $ Column    : chr  "wS" "wN" "Easting" "Northing" ...
+#  $ Definition: chr  "Weighting proportion for the soil models when both soil and vegetation models are available." "Weighting proportion for the vegetation models when both vegetation and soil models are available." "Easting coordinate (m)" "Northing coordinate (m)" ...
+
+plot_climate(variable = "MAT")
+
+```
+
+### Landcover information
+We can also view the lookup tables that define the landcover variables used in the two types of models available in this package (vegetation and soil). 
+
+``` r
+# Vegetation data
+str(abmi_landcover(landcover = "vegetation"))
+# 'data.frame':	100 obs. of  5 variables:
+#  $ Type    : chr  "Vegetation" "Vegetation" "Vegetation" "Vegetation" ...
+#  $ Variable: chr  "Climate" "WhiteSpruceR" "WhiteSpruce1" "WhiteSpruce2" ...
+#  $ Name    : chr  "Climate" "WhiteSpruceR" "WhiteSpruce1" "WhiteSpruce2" ...
+#  $ Label   : chr  NA "White Spruce 0-9" "White Spruce 10-19" "White Spruce 20-39" ...
+#  $ Color   : chr  NA "#9A9723" "#9A9723" "#9A9723" ...
+
+# Soil data
+str(abmi_landcover(landcover = "soil"))
+# 'data.frame':	25 obs. of  5 variables:
+#  $ Type    : chr  "Soil" "Soil" "Soil" "Soil" ...
+#  $ Variable: chr  "Climate" "paspen" "Loamy" "SandyLoam" ...
+#  $ Name    : chr  "Climate" "pAspen" "Loamy" "SandyLoam" ...
+#  $ Label   : chr  NA "pAspen" "Loamy" "Sandy / Loamy" ...
+#  $ Color   : chr  NA "#9A9723" "#DAD157" "#663301" ...
+
+```
+## Species coefficients
+The coefficients for both the vegetation and soil based models can be extracted into a data frame for single species or all species. Built in plotting functions can be called to visualize the coefficients. There are 100 bootstrapped iterations of these coefficients. However, these functions only produce the median bootstrap run that best represents the species.
+
+``` r
+
+# Extraction of single species coeffcients for vegetation models
+single.species <- coefficient_extraction(species = "Amblystegium.serpens", model = "vegetation")
+str(single.species)
+# Named num [1:99] 0.0774 0.1193 0.1885 0.2209 0.2188 ...
+#  - attr(*, "names")= chr [1:99] "WhiteSpruceR" "WhiteSpruce1" "WhiteSpruce2" "WhiteSpruce3" ...
+
+# Extraction of single species coeffcients for soil models
+single.species <- coefficient_extraction(species = "Amblystegium.serpens", model = "soil")
+str(single.species)
+# Named num [1:23] 0.0478 0.0414 0.0252 0.0458 0.0285 ...
+# - attr(*, "names")= chr [1:23] "Loamy" "SandyLoam" "RapidDrain" "ClaySub" ...
+
+# Extraction of all species coeffcients          
+all.species <- coefficient_extraction(species = "All", model = "vegetation")
+str(all.species)
+# num [1:667, 1:99] 0.02262 0.01237 0.00528 0.01527 0.07737 ...
+# - attr(*, "dimnames")=List of 2
+#  ..$ : chr [1:667] "BCFR" "CATO" "WETO" "WOFR" ...
+#  ..$ : chr [1:99] "WhiteSpruceR" "WhiteSpruce1" "WhiteSpruce2" "WhiteSpruce3" 
+
+# Visualization of the vegetation models
+plot_coef(species = "Amblystegium.serpens", 
+          model = "vegetation")
+
+# Visualization of the soil models
+plot_coef(species = "Amblystegium.serpens", 
+          model = "soil")
+
+
+```
+
+## Example data
+
+We provided an example data set that shows you how to organize the data:
 
 ``` r
 ## example data to see what is needed and how it is formatted
-load(system.file("extdata/example.RData", package="allinone"))
+load(system.file("extdata", "simulated-data.rda", package="ABMIexploreR"))
 
-## space climate data frame + veg/soil classes
-str(spclim)
-## 'data.frame':    30 obs. of  26 variables:
-##  $ POINT_X             : num  -113 -111 -113 -113 -114 ...
-##  $ POINT_Y             : num  49.6 51.4 49.3 51.3 49.6 ...
-##  $ NSRNAME             : Factor w/ 21 levels "Alpine","Athabasca Plain",..: 13 6 13 8 13 13 6 6 6 8 ...
-##  $ NRNAME              : Factor w/ 6 levels "Boreal","Canadian Shield",..: 4 4 4 4 4 4 4 4 4 4 ...
-##  $ LUF_NAME            : Factor w/ 7 levels "Lower Athabasca",..: 5 4 5 5 5 4 5 4 5 5 ...
-##  $ AHM                 : num  37.6 40.6 34.1 33 27.1 36.1 46.4 42.2 38.7 28.6 ...
-##  $ PET                 : int  668 630 660 623 634 632 699 672 672 662 ...
-##  $ FFP                 : int  119 114 112 111 107 113 126 119 118 112 ...
-##  $ MAP                 : int  399 320 434 409 532 371 317 322 385 521 ...
-##  $ MAT                 : num  5 3 4.8 3.5 4.4 3.4 4.7 3.6 4.9 4.9 ...
-##  $ MCMT                : num  -9.4 -13.9 -8.7 -12 -8.4 -12.6 -12.3 -14.1 -9.7 -8.3 ...
-##  $ MWMT                : num  18 17.7 17.3 16.9 16.4 17.4 19.6 18.8 18.1 17.3 ...
-##  $ pAspen              : num  0.000202 0.21 0.001266 0.01 0.006599 ...
-##  $ pWater              : num  0.001382 0.014561 0.003223 0.000396 0.002973 ...
-##  $ pSoil               : num  0.999 0.985 0.997 1 0.997 ...
-##  $ wN                  : num  0 0 0 0 0 0 0 0 0 0 ...
-##  $ PeaceRiver          : num  0 0 0 0 0 0 0 0 0 0 ...
-##  $ NSR1CentralMixedwood: num  0 0 0 0 0 0 0 0 0 0 ...
-##  $ NSR1DryMixedwood    : num  0 0 0 0 0 0 0 0 0 0 ...
-##  $ NSR1Foothills       : num  0 0 0 0 0 0 0 0 0 0 ...
-##  $ NSR1Mountain        : num  0 0 0 0 0 0 0 0 0 0 ...
-##  $ NSR1North           : num  0 0 0 0 0 0 0 0 0 0 ...
-##  $ NSR1Parkland        : num  0 0 0 0 0 0 0 0 0 0 ...
-##  $ NSR1Shield          : num  0 0 0 0 0 0 0 0 0 0 ...
-##  $ veghf               : chr  "Crop" "RoughP" "Crop" "Crop" ...
-##  $ soilhf              : chr  "Crop" "RoughP" "Crop" "Crop" ...
+## Spatial Coordinates
+## Formatted in EPSG: 3400
+str(simulated.data$simulated.climate)
+# 'data.frame':	400 obs. of  2 variables:
+#  $ X: num  624879 625878 626877 627876 628875 ...
+#  $ Y: num  6091950 6091950 6091950 6091950 6091950 ...
 
 ## veg+HF composition data matrix
-colnames(p_veghf)
-##  [1] "Bare"           "RoughP"         "Crop"           "TameP"         
-##  [5] "Industrial"     "Mine"           "Rural"          "EnSoftLin"     
-##  [9] "HardLin"        "TrSoftLin"      "EnSeismic"      "Urban"         
-## [13] "Wellsites"      "Deciduous1"     "CCDeciduous1"   "CCDeciduous2"  
-## [17] "CCDeciduous3"   "CCDeciduous4"   "CCDeciduousR"   "Deciduous2"    
-## [21] "Deciduous3"     "Deciduous4"     "Deciduous5"     "Deciduous6"    
-## [25] "Deciduous7"     "Deciduous8"     "DeciduousR"     "GraminoidFen"  
-## [29] "GrassHerb"      "Marsh"          "Mixedwood1"     "CCMixedwood1"  
-## [33] "CCMixedwood2"   "CCMixedwood3"   "CCMixedwoodR"   "Mixedwood2"    
-## [37] "CCMixedwood4"   "Mixedwood3"     "Mixedwood4"     "Mixedwood5"    
-## [41] "Mixedwood6"     "Mixedwood7"     "Mixedwood8"     "MixedwoodR"    
-## [45] "Pine1"          "CCPine1"        "CCPine2"        "CCPine3"       
-## [49] "CCPine4"        "CCPineR"        "Pine2"          "Pine3"         
-## [53] "Pine4"          "Pine5"          "Pine6"          "Pine7"         
-## [57] "Pine8"          "PineR"          "Shrub"          "ShrubbyBog"    
-## [61] "ShrubbyFen"     "ShrubbySwamp"   "SnowIce"        "WhiteSpruce1"  
-## [65] "CCWhiteSpruce1" "CCWhiteSpruce2" "CCWhiteSpruce3" "CCWhiteSpruce4"
-## [69] "CCWhiteSpruceR" "WhiteSpruce2"   "WhiteSpruce3"   "WhiteSpruce4"  
-## [73] "WhiteSpruce5"   "WhiteSpruce6"   "WhiteSpruce7"   "WhiteSpruce8"  
-## [77] "WhiteSpruceR"   "TreedBog1"      "TreedBog2"      "TreedBog3"     
-## [81] "TreedBog4"      "TreedBog5"      "TreedBog6"      "TreedBog7"     
-## [85] "TreedBog8"      "TreedBogR"      "TreedFen1"      "TreedFen2"     
-## [89] "TreedFen3"      "TreedFen4"      "TreedFen5"      "TreedFen6"     
-## [93] "TreedFen7"      "TreedFen8"      "TreedFenR"      "TreedSwamp"
+colnames(simulated.data$simulated.vegetation)
+#  [1] "DeciduousR"     "Deciduous1"     "Deciduous2"     "Deciduous3"     "Deciduous4"  
+#  [6] "Deciduous5"     "Deciduous6"     "Deciduous7"     "Deciduous8"     "MixedwoodR"   
+# [11] "Mixedwood1"     "Mixedwood2"     "Mixedwood3"     "Mixedwood4"     "Mixedwood5"   
+# [16] "Mixedwood6"     "Mixedwood7"     "Mixedwood8"     "PineR"          "Pine1"        
+# [21] "Pine2"          "Pine3"          "Pine4"          "Pine5"          "Pine6"        
+# [26] "Pine7"          "Pine8"          "WhiteSpruceR"   "WhiteSpruce1"   "WhiteSpruce2" 
+# [31] "WhiteSpruce3"   "WhiteSpruce4"   "WhiteSpruce5"   "WhiteSpruce6"   "WhiteSpruce7" 
+# [36] "WhiteSpruce8"   "TreedBogR"      "TreedBog1"      "TreedBog2"      "TreedBog3"    
+# [41] "TreedBog4"      "TreedBog5"      "TreedBog6"      "TreedBog7"      "TreedBog8"    
+# [46] "TreedFenR"      "TreedFen1"      "TreedFen2"      "TreedFen3"      "TreedFen4"    
+# [51] "TreedFen5"      "TreedFen6"      "TreedFen7"      "TreedFen8"      "TreedSwamp"   
+# [56] "GrassHerb"      "Shrub"          "GraminoidFen"   "Marsh"          "ShrubbyBog"   
+# [61] "ShrubbyFen"     "ShrubbySwamp"   "Bare"           "SnowIce"        "Water"        
+# [66] "Urban"          "Rural"          "Industrial"     "Mine"           "Wellsites"    
+# [71] "EnSoftLin"      "EnSeismic"      "HardLin"        "TrSoftLin"      "Crop"         
+# [76] "RoughP"         "TameP"          "HWater"         "CCDeciduousR"   "CCDeciduous1" 
+# [81] "CCDeciduous2"   "CCDeciduous3"   "CCDeciduous4"   "CCMixedwoodR"   "CCMixedwood1" 
+# [86] "CCMixedwood2"   "CCMixedwood3"   "CCMixedwood4"   "CCPineR"        "CCPine1"      
+# [91] "CCPine2"        "CCPine3"        "CCPine4"        "CCWhiteSpruceR" "CCWhiteSpruce1"
+# [96] "CCWhiteSpruce2" "CCWhiteSpruce3" "CCWhiteSpruce4"
 
 ## soil+HF composition data matrix
-colnames(p_soilhf)
-##  [1] "RapidDrain" "Crop"       "RoughP"     "TameP"      "Industrial"
-##  [6] "Mine"       "Rural"      "EnSoftLin"  "HardLin"    "TrSoftLin" 
-## [11] "EnSeismic"  "Wellsites"  "Blowout"    "Urban"      "ClaySub"   
-## [16] "Other"      "Loamy"      "SandyLoam"  "ThinBreak"
+colnames(simulated.data$simulated.soil)
+#  [1] "ClaySub"     "Other"       "RapidDrain"  "Loamy"       "SandyLoam"  
+#  [6] "ThinBreak"   "Blowout"     "SoilUnknown" "Water"       "Urban"      
+# [11] "Rural"       "Industrial"  "Mine"        "Wellsites"   "EnSoftLin"  
+# [16] "EnSeismic"   "HardLin"     "TrSoftLin"   "Crop"        "RoughP"     
+# [21] "TameP"       "HWater"      "HFor" 
 ```
 
 ### Predict for a species
 
-You need to define the species ID (use the `tab` object to find out) and
-the bootstrap ID (`i`). The bootstrap ID can be between 1 and 100 (only
-1 for mammals and habitat elements).
+You need to define the species ID and (`abmi_species()$SpeciesID`) the bootstrap ID (`i`). The bootstrap ID can be between 1 and 100. Users can also define a bootstrap value of 0, which selects the representative median bootstrap iteration for that species
 
 ``` r
 ## define species and bootstrap id
-spp <- "AlderFlycatcher"
-i <- 1
+spp <- "Amblystegium.serpens"
+i <- 0
 ```
 
-#### Composition data
-
-You can use composition data, i.e. giving the areas or proportions of
-different landcover types (columns) in a spatial unit (rows). The
-corresponding relative abundance values will be returned in a matrix
-format:
+#### Spatial data
 
 ``` r
-## use composition
-z1 <- ai_predict(spp, 
-  spclim=spclim, 
-  veghf=p_veghf, 
-  soilhf=p_soilhf,
-  i=i)
-## [INFO] Making predictions for species AlderFlycatcher (birds) i=1
-str(z1)
-## List of 2
-##  $ north: num [1:30, 1:96] 0 0 0 0 0 0 0 0 0 0 ...
-##   ..- attr(*, "dimnames")=List of 2
-##   .. ..$ : chr [1:30] "1167_502" "964_613" "1194_487" "973_442" ...
-##   .. ..$ : chr [1:96] "Bare" "RoughP" "Crop" "TameP" ...
-##  $ south: num [1:30, 1:19] 0.00 0.00 6.64e-07 0.00 1.41e-05 ...
-##   ..- attr(*, "dimnames")=List of 2
-##   .. ..$ : chr [1:30] "1167_502" "964_613" "1194_487" "973_442" ...
-##   .. ..$ : chr [1:19] "RapidDrain" "Crop" "RoughP" "TameP" ...
+## Define the spatial coordinates and 
+spatial.locations <- as.matrix(simulated.data$simulated.climate)
+spatial.locations <- vect(x = spatial.locations[, c("X", "Y")],
+                          type = "points")
+crs(spatial.locations) <- "EPSG:3400"
+
+# Extract the appropriate bioclimatic data
+# Users can define unique cell names with the cell.id option
+climate.input <- extract_climate(spatial.grid = spatial.locations, 
+                          cell.id = 1:400,
+                          reproject = FALSE)
+                          
 ```
 
-#### Sector effects
+#### Predictions
 
-Having such a matrix format is ideal when further aggregation is to be
-performed on the output, e.g. when calculating sector effects. In the
-example we use only the current landscape here, and show how to use
-model weights (`wN`) to average the north and south results in the
-overlap zone:
+The prediction functions require composition data, i.e. giving the areas or proportions of
+different landcover types (columns) in a spatial unit (rows). The corresponding relative abundance values will be returned in a matrix format:
 
 ``` r
-## sector effects
-library(mefa4)
-lt <- ai_classes()
-ltn <- nonDuplicated(lt$north, Label, TRUE)
-lts <- nonDuplicated(lt$south, Label, TRUE)
+## Define the compositional data
+veg.data <- simulated.data$simulated.vegetation
+soil.data <- simulated.data$simulated.soil
 
-Nn <- groupSums(z1$north, 2, ltn[colnames(z1$north), "Sector"])
-Ns <- groupSums(z1$south, 2, lts[colnames(z1$south), "Sector"])
-Ns <- cbind(Ns, Forestry=0)
-N <- spclim$wN * Nn + (1-spclim$wN) * Ns
-colSums(Nn)
-##         Native    Agriculture     RuralUrban         Energy Transportation 
-##     0.64406824     0.14011059     0.01153628     0.03155056     0.02626116 
-##       Forestry 
-##     0.17863231
-colSums(Ns)
-##         Native    Agriculture     RuralUrban         Energy Transportation 
-##   2.973927e-03   1.180921e-02   2.369699e-04   2.922007e-10   3.790724e-10 
-##       Forestry 
-##   0.000000e+00
-colSums(N)
-##         Native    Agriculture     RuralUrban         Energy Transportation 
-##    0.610374698    0.076370845    0.005830417    0.022772096    0.015636447 
-##       Forestry 
-##    0.178632312
+## Make single species prediction
+model.output <- species_predict(species = spp, 
+                                   veg = veg.data, 
+                                   soil = soil.data, 
+                                   climate = climate.input, 
+                                   modified = FALSE, 
+                                   boot = i)
+
 ```
 
-#### Classified landcover data
+#### Prediction blending
 
-We have classified landcover data when we are making predictions for
-single polygons (which are aggregated in the composition data case). We
-can provide `veghf` and `soilhf` as a vector of these classes.
-
-Make sure that the class names are consistent with column names in the
-example data matrices for the north and south, respectively.
-
-The function now returns a list of vectors:
+For applicable species, models can be generated using both vegetation and soil based information.
+These two models can be blended together in areas where the predictions have spatial overlap.
 
 ``` r
-## use land cover classes
-z2 <- ai_predict(spp, 
-  spclim=spclim, 
-  veghf=spclim$veghf, 
-  soilhf=spclim$soilhf,
-  i=i)
-## [INFO] Making predictions for species AlderFlycatcher (birds) i=1
-str(z2)
-## List of 2
-##  $ north: Named num [1:30] 0.00151 0.00835 0.00186 0.00443 0.0058 ...
-##   ..- attr(*, "names")= chr [1:30] "1" "2" "3" "4" ...
-##  $ south: Named num [1:30] 2.06e-05 6.72e-05 4.12e-05 1.07e-04 1.73e-04 ...
-##   ..- attr(*, "names")= chr [1:30] "1" "2" "3" "4" ...
+## Blend the predictions
+blend.pred <- blend_predict(climate = climate.input, 
+                            veg = model.output.og$veg, 
+                            soil = model.output.og$soil)
 
-## averaging predictions
-avg2 <- spclim$wN * z2$north + (1-spclim$wN) * z2$south
-str(avg2)
-##  Named num [1:30] 2.06e-05 6.72e-05 4.12e-05 1.07e-04 1.73e-04 ...
-##  - attr(*, "names")= chr [1:30] "1" "2" "3" "4" ...
+```
+#### Prediction visualization
+
+For applicable species, models can be generated using both vegetation and soil based information.
+These two models can be blended together in areas where the predictions have spatial overlap.
+
+``` r
+## Visualize Blend the predictions
+species.pred <- as.matrix(simulated.data$simulated.climate)
+species.pred$Species <- blend.pred
+species.pred <- rast(x = species.pred,
+                          type = "xyz")
+crs(species.pred) <- "EPSG:3400"
+
+plot_species(spat.raster = spatial.locations,
+             variable = "Species")
+
 ```
 
-### Prediction uncertainty
+#### Prediction uncertainty
 
-We can use the bootstrap distribution to calculate uncertainty
-(i.e. confidence intervals, CI):
+We can also generate uncertainty estimates for each species:
 
 ``` r
-v <- NULL
+bootstrap.matrix <- NULL
 
 for (i in 1:20) {
-    zz <- ai_predict(spp, 
-        spclim=spclim, 
-        veghf=spclim$veghf, 
-        soilhf=spclim$soilhf,
-        i=i)
-    v <- cbind(v, spclim$wN * zz$north + (1-spclim$wN) * zz$south)
+model.output <- species_predict(species = spp, 
+                                   veg = veg.data, 
+                                   soil = NULL, 
+                                   climate = climate.input, 
+                                   modified = FALSE, 
+                                   boot = i)
+    v <- cbind(bootstrap.matrix, model.output$veg)
 }
 
-t(apply(v[25:30,], 1, quantile, c(0.5, 0.05, 0.95)))
+t(apply(bootstrap.matrix[25:30,], 1, quantile, c(0.5, 0.05, 0.95)))
           50%         5%        95%
 ## 25 0.31590764 0.26543390 0.35751442
 ## 26 0.05219450 0.03893699 0.07041478
@@ -286,67 +288,36 @@ t(apply(v[25:30,], 1, quantile, c(0.5, 0.05, 0.95)))
 ## 30 0.06754963 0.05384576 0.08798115
 ```
 
-This gives the median and the 90% CI. This is currently not available
-for mammals and habitat elements.
 
-### Predict for multiple species
+## Coefficient Modification
 
-Once the predictors are organized, loop over the species IDs from `tab`
-and store the results in an organized fashion.
-
-## Spatial data manipulation
-
-The variables in the `spclim` object can be extracted from the raster
-layers stored in the
-[ABbiodiversity/allinone-coefs](https://github.com/ABbiodiversity/allinone-coefs)
-repository. Clone or download the contents in zip format and extract
-into a folder (`dir` variable used here).
+We recommend that users do not modify the coefficients that are available in this package. However, there are circumstances where users may wish to fix specific habitat coefficients to 0. 
+If the coefficients are modified, users will need to include the `TRUE` flag for the `modified` option in the `species_predict` function. Coefficient adjustments are applied to all bootstrap iterations and across all species.
 
 ``` r
-library(sf)
-library(raster)
 
-## you got some coordinates (degree long/lat)
-XY <- spclim[,c("POINT_X", "POINT_Y")]
-head(XY)
+# Create the adjusted coefficients
+coefficient_adjustment(model = "Vegetation", coef = "Crop", value = 0)
+model.output <- species_predict(species = spp, 
+                                   veg = veg.data, 
+                                   soil = soil.data, 
+                                   climate = climate.input, 
+                                   modified = TRUE, 
+                                   boot = 0)
+                                   
+blend.pred <- blend_predict(climate = climate.input, 
+                            veg = model.output.og$veg, 
+                            soil = model.output.og$soil)
 
-## make a sf data frame
-xy <- sf::st_as_sf(XY, coords = c("POINT_X", "POINT_Y"))
-## set CRS
-xy <- st_set_crs(xy, "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0")
+# Visualize the new predictions                              
+species.pred <- as.matrix(simulated.data$simulated.climate)
+species.pred$Species <- blend.pred
+species.pred <- rast(x = species.pred,
+                          type = "xyz")
+crs(species.pred) <- "EPSG:3400"
 
-## variable names
-vn <- c("AHM", "FFP", "MAP", "MAT", "MCMT", "MWMT", 
-  "NSR1CentralMixedwood", "NSR1DryMixedwood", "NSR1Foothills", 
-  "NSR1Mountain", "NSR1North", "NSR1Parkland", "NSR1Shield", 
-  "pAspen", "PeaceRiver", "PET", "pWater", "wN")
-## link to the rasters & create a stack
-rl <- list()
-for (j in vn)
-  rl[[j]] <- suppressWarnings(raster(
-    file.path(dir, "spatial", paste0(j, ".tif"))))
-rl <- stack(rl)
-
-## transform xy to Alberta TM
-xy <- st_transform(xy, proj4string(rl))
-
-plot(rl[["pAspen"]], axes=FALSE, box=FALSE)
-plot(xy$geometry, add=TRUE, pch=3)
-
-## extract info
-e <- extract(rl, xy)
-
-## absolute difference should be tiny
-max(colSums(abs(spclim[,vn] - e[,vn])))
-
-## we need long/lat as in XY too
-spclim2 <- data.frame(XY, e)
-
-## let's see what we get
-str(ai_predict(spp, 
-  spclim=spclim2, 
-  veghf=spclim$veghf, 
-  soilhf=spclim$soilhf,
-  i=i))
+plot_species(spat.raster = spatial.locations,
+             variable = "Species")
+             
 ```
 

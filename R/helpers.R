@@ -1,75 +1,68 @@
-#' Internal helper functions
+#' Internal lookup tables
 #'
-#' Provide SDM coefficients
+#' @section Provide users with access to internal lookup tables.
 #'
-#' @description Helper functions to list species climate, vegetation, soil, and footprint coefficients
+#' @description This function provides the lookup table of the vegetation, soil, and footprint definitions
 #'
-#' @param x Input
+#' @param landcover Define 'Vegetation' or 'Soil' landcover classes.
 #'
-
-#' @name helper
-NULL
-
 #' @export
-#' @rdname helper
-abmi_species <- function() {
-    if (!.loaded())
-        stop("Use abmi_load_coefs() to load coefs")
-    out <- NULL
-    for (taxon in names(.abmi1$COEFS)) {
-        tmp <- .abmi1$COEFS[[taxon]]$species
-        tmp <- tmp[tmp$ModelNorth | tmp$ModelSouth,]
-        out <- rbind(out, tmp)
-    }
-    out
-}
-
-#' Provide landcover definitions
 #'
-#' @description Helper functions to list species vegetation, soil, and footprint definitions
-#' @param landcover Users can define Vegetation or Soil landcover classes
+#' @examples
+#' \dontrun{
+#' landcover.lookup <- abmi_landcover(landcover = "Vegetation")
+#' }
+#'
+#' @return A dataframe with all of the coefficients used in the joint climate and landcover model.
 #' 
-#' @export
-#' @rdname helper
+
 abmi_landcover <- function(landcover) {
     
-    return(.landcover.names[[landcover]])
+    return(landcover.names[[landcover]])
     
 }
 
-#' Provide climate definitions
+#' Provide users with bioclimatic lookup table
 #'
-#' @description Helper functions to list bioclimatic definitions
-#' 
+#' @description This function provides the lookup table of the bioclimatic covariates used in the climate model.
+#'
 #' @export
-#' @rdname helper
+#'
+#' @examples
+#' \dontrun{
+#' climate.lookup <- abmi_climate()
+#' }
+#'
+#' @return A dataframe with all of the coefficients used in the climate model. Each taxonomic group uses a unique set of these variables.
+
 abmi_climate <- function() {
     
-    return(.bioclimatic.lookup)
+    return(bioclimatic.lookup)
     
 }
 
-#' Handle package options
+#' Provide users with species lookup table
 #'
-#' @description Helper functions to attach or detech package options to the current space
-#' 
+#' @description This function provides the lookup table of all species models.
+#'
 #' @export
-#' @rdname helper
-#' 
-.onAttach <- function(libname, pkgname){
-    ver <- read.dcf(file=system.file("DESCRIPTION", package=pkgname),
-                    fields=c("Version", "Date"))
-    packageStartupMessage(paste(pkgname, ver[1], "\t", ver[2]))
-    if (is.null(getOption("ABMIexploreR"))) {
-        options("ABMIexploreR" = list(
-            url="https://github.com/beallen/ABMIexploreR-data/v2025",
-            dir=".",
-            verbose=1))
-    }
-    invisible(NULL)
-}
+#'
+#' @examples
+#' \dontrun{
+#' species.lookup <- abmi_climate()
+#' }
+#'
+#' @return A dataframe with all of the species information include model region and validation statistics.
 
-.onUnload <- function(libpath){
-    options("ABMIexploreR" = NULL)
-    invisible(NULL)
+abmi_species <- function() {
+    
+    species.lookup <- NULL
+    for(taxon in names(species.coefs)) {
+        
+        species.lookup <- rbind(species.lookup, species.coefs[[taxon]]$species)
+        
+    }
+    
+    return(species.lookup)
+    
 }

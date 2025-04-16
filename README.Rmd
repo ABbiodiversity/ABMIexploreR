@@ -1,0 +1,231 @@
+---
+output:
+  md_document:
+    variant: markdown_github
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  fig.path = "README-",
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+# ABMIexploreR
+
+> Custom Predictions using ABMI species distribution models in Alberta
+
+## Install
+
+```{r eval=FALSE}
+if (!require("remotes"))
+    install.packages("remotes")
+remotes::install_github("ABbiodiversity/ABMIexploreR")
+```
+
+The bioclimatic rasters are downloaded alongside the package, but need to be loaded into memory before users can make predictions.
+
+```{r}
+library(ABMIexploreR)
+
+abmi_load_bioclimatic()
+```
+
+## Lookup tables
+
+### Species information
+
+The lookup table providing information on taxonomic group, model region (e.g., vegetation and or soil), and model fit can be extracted from the abmi_species() function.
+
+```{r}
+species.lookup <- abmi_species()
+str(species.lookup)
+```
+
+Here is the number of species by taxonomic group available in the package:
+
+```{r}
+data.frame(table(species.lookup$Taxon))
+```
+
+### Bioclimatic information
+The bioclimatic variables used in our hierarchical models can be viewed as both a lookup table, or visualized to see the spatial distribution of these variables across Alberta.
+
+```{r}
+str(abmi_climate())
+```
+
+### Landcover information
+We can also view the lookup tables that define the landcover variables used in the two types of models available in this package (vegetation and soil). 
+
+```{r}
+str(abmi_landcover(landcover = "vegetation"))
+str(abmi_landcover(landcover = "soil"))
+```
+
+## Species coefficients
+The coefficients for both the vegetation and soil based models can be extracted into a data frame for single species or all species. Built in plotting functions can be called to visualize the coefficients. There are 100 bootstrapped iterations of these coefficients. However, these functions only produce the median bootstrap run that best represents the species.
+
+```{r}
+single.species <- coefficient_extraction(species = "Amblystegium.serpens", model = "vegetation")
+str(single.species)
+
+# Extraction of single species coeffcients for soil models
+single.species <- coefficient_extraction(species = "Amblystegium.serpens", model = "soil")
+str(single.species)
+
+# Extraction of all species coeffcients          
+all.species <- coefficient_extraction(species = "All", model = "vegetation")
+str(all.species)
+
+# Visualization of the vegetation models
+plot_coef(species = "Amblystegium.serpens", 
+          model = "vegetation")
+
+# Visualization of the soil models
+plot_coef(species = "Amblystegium.serpens", 
+          model = "soil")
+```
+
+## Example data
+
+We provided an example data set that shows you how to organize the data:
+
+```{r}
+## Example data to see what is needed and how it is formatted
+load(system.file("extdata", "simulated-data.rda", package="ABMIexploreR"))
+
+str(simulated.data$simulated.climate)
+
+colnames(simulated.data$simulated.vegetation)
+
+colnames(simulated.data$simulated.soil)
+
+```
+
+### Predict for a species
+
+You need to define the species ID and (`abmi_species()$SpeciesID`) the bootstrap ID (`i`). The bootstrap ID can be between 1 and 100. Users can also define a bootstrap value of 0, which selects the representative median bootstrap iteration for that species
+
+```{r}
+## define species and bootstrap id
+spp <- "Amblystegium.serpens"
+i <- 0
+```
+
+#### Spatial data
+Based on user defined coordinates (EPSG:3400), extract the relevant bioclimatic variables required for predictions.
+
+```{r}
+## Define the spatial coordinates and 
+spatial.locations <- as.matrix(simulated.data$simulated.climate)
+spatial.locations <- vect(x = spatial.locations[, c("X", "Y")],
+                          type = "points")
+crs(spatial.locations) <- "EPSG:3400"
+
+# Extract the appropriate bioclimatic data
+# Users can define unique cell names with the cell.id option
+climate.input <- extract_climate(spatial.grid = spatial.locations, 
+                          cell.id = 1:400,
+                          reproject = FALSE)
+```
+
+#### Predictions
+
+The prediction functions require composition data, i.e. giving the areas or proportions of
+different landcover types (columns) in a spatial unit (rows). The corresponding relative abundance values will be returned in a matrix format:
+
+```{r}
+## Define the compositional data
+veg.data <- simulated.data$simulated.vegetation
+soil.data <- simulated.data$simulated.soil
+
+## Make single species prediction
+model.output <- species_predict(species = spp, 
+                                   veg = veg.data, 
+                                   soil = soil.data, 
+                                   climate = climate.input, 
+                                   modified = FALSE, 
+                                   boot = i)
+```
+
+#### Prediction blending
+
+For applicable species, models can be generated using both vegetation and soil based information.
+These two models can be blended together in areas where the predictions have spatial overlap.
+
+```{r}
+## Blend the predictions
+blend.pred <- blend_predict(climate = climate.input, 
+                            veg = model.output.og$veg, 
+                            soil = model.output.og$soil)
+```
+
+#### Prediction visualization
+
+For applicable species, models can be generated using both vegetation and soil based information.
+These two models can be blended together in areas where the predictions have spatial overlap.
+
+```{r}
+## Visualize Blend the predictions
+species.pred <- as.matrix(simulated.data$simulated.climate)
+species.pred$Species <- blend.pred
+species.pred <- rast(x = species.pred,
+                          type = "xyz")
+crs(species.pred) <- "EPSG:3400"
+
+plot_species(spat.raster = spatial.locations,
+             variable = "Species")
+```
+
+#### Prediction uncertainty
+
+We can also generate uncertainty estimates for each species:
+
+```{r}
+bootstrap.matrix <- NULL
+
+for (i in 1:20) {
+model.output <- species_predict(species = spp, 
+                                   veg = veg.data, 
+                                   soil = NULL, 
+                                   climate = climate.input, 
+                                   modified = FALSE, 
+                                   boot = i)
+    v <- cbind(bootstrap.matrix, model.output$veg)
+}
+
+t(apply(bootstrap.matrix[25:30,], 1, quantile, c(0.5, 0.05, 0.95)))
+```
+
+## Coefficient Modification
+
+We recommend that users do not modify the coefficients that are available in this package. However, there are circumstances where users may wish to fix specific habitat coefficients to 0. 
+If the coefficients are modified, users will need to include the `TRUE` flag for the `modified` option in the `species_predict` function. Coefficient adjustments are applied to all bootstrap iterations and across all species.
+
+```{r}
+# Create the adjusted coefficients
+coefficient_adjustment(model = "Vegetation", coef = "Crop", value = 0)
+model.output <- species_predict(species = spp, 
+                                   veg = veg.data, 
+                                   soil = soil.data, 
+                                   climate = climate.input, 
+                                   modified = TRUE, 
+                                   boot = 0)
+                                   
+blend.pred <- blend_predict(climate = climate.input, 
+                            veg = model.output.og$veg, 
+                            soil = model.output.og$soil)
+
+# Visualize the new predictions                              
+species.pred <- as.matrix(simulated.data$simulated.climate)
+species.pred$Species <- blend.pred
+species.pred <- rast(x = species.pred,
+                          type = "xyz")
+crs(species.pred) <- "EPSG:3400"
+
+plot_species(spat.raster = spatial.locations,
+             variable = "Species")
+```
