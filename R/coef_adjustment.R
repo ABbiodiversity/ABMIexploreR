@@ -80,7 +80,7 @@ coefficient_adjustment <- function(model, coef = NULL, value = NULL) {
            value = species.coefs.mod, 
            envir = .GlobalEnv)
     
-    stop("Coefficients have been modified based on user defined inputs.")
+    return("Coefficients have been modified based on user defined inputs.")
     
 }
 
