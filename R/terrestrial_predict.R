@@ -149,7 +149,7 @@
     }
     
     # Return the predictions to user
-    return(list(veg = veg.pred, 
-                soil = soil.pred))
+    return(list(Vegetation = veg.pred, 
+                Soil = soil.pred))
     
 }

@@ -36,7 +36,7 @@ species_predict <- function(species, veg = NULL, soil = NULL,
     # Check that there are no mismatches between the landcover and coefficients
     if(!is.null(veg)) {
         
-        landcover.lookup <- landcover.names$vegetation
+        landcover.lookup <- landcover.names$Vegetation
         
         if(!all(colnames(veg) %in% landcover.lookup$Variable[landcover.lookup$Type == "Vegetation"])) {
             
@@ -50,7 +50,7 @@ species_predict <- function(species, veg = NULL, soil = NULL,
     
     if(!is.null(soil)) {
         
-        landcover.lookup <- landcover.names$soil
+        landcover.lookup <- landcover.names$Soil
         
         if(!all(colnames(soil) %in% landcover.lookup$Variable[landcover.lookup$Type == "Soil"])) {
             
