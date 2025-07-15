@@ -16,7 +16,7 @@
 
 .terrestrial_predicts <- function(species, taxon = NULL, veg = NULL, 
                                   soil = NULL, climate = NULL, boot = 0,
-                                  modified = modified) {
+                                  modified = FALSE) {
     
     # If modified coefficients are defined by the user, use them
     if(modified) {
