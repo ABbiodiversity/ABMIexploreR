@@ -19,10 +19,10 @@ plot_coef <- function(species,
                                          model = model)
     
     # Vegetation Plot
-    if(model == "vegetation") {
+    if(model == "Vegetation") {
         
         # Isolate the vegetation lookup table
-        vegetation.template <- landcover.names$vegetation
+        vegetation.template <- landcover.names$Vegetation
         vegetation.template <- vegetation.template[!is.na(vegetation.template$Label), ]
         
         # Isolate the main coefficients
@@ -47,12 +47,12 @@ plot_coef <- function(species,
                                         rep("Pine", 5), rep(NA, 4),
                                         rep("Deciduous", 5), rep(NA, 4),
                                         rep("Mixedwood", 5), rep(NA, 4),
-                                        rep(NA, 37)),
+                                        rep(NA, 29)),
                               Coef = c(cc.coef$Coef[1:5], rep(NA, 4),
                                       cc.coef$Coef[6:10], rep(NA, 4),
                                       cc.coef$Coef[11:15], rep(NA, 4),
                                       cc.coef$Coef[16:20], rep(NA, 4),
-                                      rep(NA, 37)))
+                                      rep(NA, 29)))
         
         # Create the plot
         coef.plot <- print(ggplot(data = main.coef, aes(x = Label, y = Coef, fill = Color)) +
@@ -80,10 +80,10 @@ plot_coef <- function(species,
     }
     
     # Soil Plot
-    if(model == "soil") {
+    if(model == "Soil") {
         
         # Isolate the soil lookup table
-        soil.template <- landcover.names$soil
+        soil.template <- landcover.names$Soil
         soil.template <- soil.template[!is.na(soil.template$Label), ]
         
         # Standardize the coefficients
