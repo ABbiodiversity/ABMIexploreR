@@ -11,7 +11,7 @@
   soil = NULL,
   climate = NULL,
   boot = 0,
-  modified = modified
+  modified = FALSE
 )
 }
 \arguments{
