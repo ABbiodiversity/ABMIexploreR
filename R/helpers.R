@@ -59,7 +59,7 @@ abmi_species <- function() {
     species.lookup <- NULL
     for(taxon in names(species.coefs)) {
         
-        species.lookup <- rbind(species.lookup, species.coefs[[taxon]]$species)
+        species.lookup <- rbind(species.lookup, species.coefs[[taxon]]$Species)
         
     }
     

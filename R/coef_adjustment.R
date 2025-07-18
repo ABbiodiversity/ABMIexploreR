@@ -29,9 +29,9 @@ coefficient_adjustment <- function(model, coef = NULL, value = NULL) {
         if(model %in% c("Vegetation", "All")) {
             
             # If invalid coefficients, stop and provide warning message
-            if(!all(coef %in% colnames(species.coefs.mod[[taxon]]$vegetation))) {
+            if(!all(coef %in% colnames(species.coefs.mod[[taxon]]$Vegetation))) {
                 
-                invalid.coefs <- coef[!(coef %in% colnames(species.coefs.mod[[taxon]]$vegetation))]
+                invalid.coefs <- coef[!(coef %in% colnames(species.coefs.mod[[taxon]]$Vegetation))]
                 
                 stop(paste("Unknown vegetation coefficient were provided:",
                            invalid.coefs,
@@ -42,7 +42,7 @@ coefficient_adjustment <- function(model, coef = NULL, value = NULL) {
             # Adjustments
             for(coef.adjust in 1:length(coef)) {
                 
-                species.coefs.mod[[taxon]]$vegetation[, coef[coef.adjust], ] <- link.fun(value[coef.adjust])
+                species.coefs.mod[[taxon]]$Vegetation[, coef[coef.adjust], ] <- link.fun(value[coef.adjust])
                 
             }
             
@@ -55,9 +55,9 @@ coefficient_adjustment <- function(model, coef = NULL, value = NULL) {
         if(model %in% c("Soil", "All")) {
             
             # If invalid coefficients, stop and provide warning message
-            if(!all(coef %in% colnames(species.coefs.mod[[taxon]]$soil))) {
+            if(!all(coef %in% colnames(species.coefs.mod[[taxon]]$Soil))) {
                 
-                invalid.coefs <- coef[!(coef %in% colnames(species.coefs.mod[[taxon]]$soil))]
+                invalid.coefs <- coef[!(coef %in% colnames(species.coefs.mod[[taxon]]$Soil))]
                 
                 stop(paste("Unknown soil coefficient were provided:",
                            invalid.coefs,
@@ -68,7 +68,7 @@ coefficient_adjustment <- function(model, coef = NULL, value = NULL) {
             # Adjustments
             for(coef.adjust in 1:length(coef)) {
                 
-                species.coefs.mod[[taxon]]$soil[, coef[coef.adjust], ] <- link.fun(value[coef.adjust])
+                species.coefs.mod[[taxon]]$Soil[, coef[coef.adjust], ] <- link.fun(value[coef.adjust])
                 
             }
             

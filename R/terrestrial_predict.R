@@ -41,9 +41,9 @@
     } 
     
     # Define vegetation and soil coefficients
-    if(species %in% rownames(COEFS[[taxon]]$climate)) {
+    if(species %in% rownames(COEFS[[taxon]]$Climate)) {
         
-        species.climate <- COEFS[[taxon]]$climate[species,,boot]
+        species.climate <- COEFS[[taxon]]$Climate[species,,boot]
         
     } else {
         
@@ -51,9 +51,9 @@
         
     }
     
-    if(species %in% rownames(COEFS[[taxon]]$vegetation)) {
+    if(species %in% rownames(COEFS[[taxon]]$Vegetation)) {
         
-        species.veg <- COEFS[[taxon]]$vegetation[species,,boot]
+        species.veg <- COEFS[[taxon]]$Vegetation[species,,boot]
         
     } else {
         
@@ -61,9 +61,9 @@
         
     }
     
-    if(species %in% rownames(COEFS[[taxon]]$soil)) {
+    if(species %in% rownames(COEFS[[taxon]]$Soil)) {
         
-        species.soil <- COEFS[[taxon]]$soil[species,,boot]
+        species.soil <- COEFS[[taxon]]$Soil[species,,boot]
         
     } else {
         

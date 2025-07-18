@@ -3,7 +3,7 @@
 #' @description This function extracts the stored coefficients and provides a table or summary figure.
 #' 
 #' @param species Unique Species ID. If defined as "All", the complete coefficient table will be provided to the user.
-#' @param model Vector defined as "vegetation" or "soil" that provides the relevant coefficients.
+#' @param model Vector defined as "Vegetation" or "Soil" that provides the relevant coefficients.
 #'
 #' @import Matrix
 #'
@@ -14,21 +14,21 @@
 coefficient_extraction <- function(species, model = NULL) {
     
     # Check for valid model
-    if(!(model %in% c("vegetation", "soil"))) {
+    if(!(model %in% c("Vegetation", "Soil"))) {
         
-        stop("Need to a valid model type (vegetation, soil).")
+        stop("Need to a valid model type (Vegetation, Soil).")
     }
     
     # Generate the species lookup table
     species.lookup <- abmi_species()
     
-    if(model == "vegetation") {
+    if(model == "Vegetation") {
         
         species.lookup <- species.lookup[species.lookup$ModelNorth, ]
         
     }
     
-    if(model == "soil") {
+    if(model == "Soil") {
         
         species.lookup <- species.lookup[species.lookup$ModelSouth, ]
         
@@ -72,7 +72,7 @@ coefficient_extraction <- function(species, model = NULL) {
         
     } else {
         
-        stop("Species model not available. Check SpeciesID or model type (vegetation or soil).")
+        stop("Species model not available. Check SpeciesID or model type (Vegetation or Soil).")
         
     }
     
