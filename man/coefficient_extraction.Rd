@@ -9,7 +9,7 @@ coefficient_extraction(species, model = NULL)
 \arguments{
 \item{species}{Unique Species ID. If defined as "All", the complete coefficient table will be provided to the user.}
 
-\item{model}{Vector defined as "vegetation" or "soil" that provides the relevant coefficients.}
+\item{model}{Vector defined as "Vegetation" or "Soil" that provides the relevant coefficients.}
 }
 \description{
 This function extracts the stored coefficients and provides a table or summary figure.
