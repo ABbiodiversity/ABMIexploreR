@@ -28,9 +28,13 @@ plot_coef <- function(species,
         # Isolate the main coefficients
         main.coef <- data.frame(Name = names(model.coef),
                                 Coef = model.coef,
-                                Label = factor(names(model.coef),
-                                               levels = names(model.coef)))
+                                Label = names(model.coef))
         
+        # Update the Label with the human readable tags
+        main.coef$Label <- factor(vegetation.template$Label[match(main.coef$Name, vegetation.template$Name)],
+                                  levels = vegetation.template$Label[match(main.coef$Name, vegetation.template$Name)])
+        
+        # Assign predetermined colors
         main.coef$Color <- vegetation.template$Color[match(main.coef$Name, vegetation.template$Name)]
         
         # Define maximum value
@@ -49,19 +53,21 @@ plot_coef <- function(species,
                                         rep("Mixedwood", 5), rep(NA, 4),
                                         rep(NA, 29)),
                               Coef = c(cc.coef$Coef[1:5], rep(NA, 4),
-                                      cc.coef$Coef[6:10], rep(NA, 4),
-                                      cc.coef$Coef[11:15], rep(NA, 4),
-                                      cc.coef$Coef[16:20], rep(NA, 4),
-                                      rep(NA, 29)))
+                                       cc.coef$Coef[6:10], rep(NA, 4),
+                                       cc.coef$Coef[11:15], rep(NA, 4),
+                                       cc.coef$Coef[16:20], rep(NA, 4),
+                                       rep(NA, 29)))
+        cc.coef$Label <- main.coef$Label
         
         # Create the plot
-        coef.plot <- print(ggplot(data = main.coef, aes(x = Label, y = Coef, fill = Color)) +
-            geom_bar(stat = "identity", fill = main.coef$Color) +
+        coef.plot <- ggplot() +
+            geom_bar(data = main.coef, aes(x = Label, y = Coef, fill = Color),
+                     stat = "identity", fill = main.coef$Color) +
             scale_x_discrete(labels = main.coef$Label) +
-            geom_point(aes(x = main.coef$Name, y = cc.coef$Coef), show.legend = FALSE) +
-            geom_line(aes(x = main.coef$Name, y = cc.coef$Coef, 
-                          group = cc.coef$Class, linetype = "dotted"), 
-                      size = 1, show.legend = FALSE) +
+            geom_point(data = cc.coef, aes(x = Label, y = Coef), show.legend = FALSE, na.rm = TRUE) +
+            geom_line(data = cc.coef, aes(x = Label, y = Coef, 
+                                          group = Class, linetype = "dotted"), 
+                      size = 1, show.legend = FALSE, na.rm = TRUE) +
             scale_linetype_manual(values=c("dotted")) +
             guides(scale = "none") + 
             labs(x = "Coefficient", y = "Relative Abundance") +
@@ -75,7 +81,8 @@ plot_coef <- function(species,
                   legend.text = element_text(size=16),
                   legend.title = element_blank(),
                   axis.line = element_line(colour = "black"),
-                  panel.border = element_rect(colour = "black", fill=NA, size=1)))
+                  panel.border = element_rect(colour = "black", fill=NA, size=1))
+        
         
     }
     
@@ -89,8 +96,12 @@ plot_coef <- function(species,
         # Standardize the coefficients
         main.coef <- data.frame(Name = names(model.coef),
                                 Coef = model.coef,
-                                Label = factor(names(model.coef),
-                                               levels = names(model.coef)))
+                                Label = names(model.coef))
+        
+        # Update the Label with the human readable tags
+        main.coef$Label <- factor(soil.template$Label[match(main.coef$Name, soil.template$Name)],
+                                  levels = soil.template$Label[match(main.coef$Name, soil.template$Name)])
+        
         
         main.coef$Color <- soil.template$Color[match(main.coef$Name, soil.template$Name)]
         main.coef <- main.coef[!is.na(main.coef$Color), ]
@@ -98,7 +109,7 @@ plot_coef <- function(species,
         max.value <- max(c(main.coef$Coef))
         
         # Create the plot
-        coef.plot <- print(ggplot(data = main.coef, aes(x = Label, y = Coef, fill = Color)) +
+        coef.plot <- ggplot(data = main.coef, aes(x = Label, y = Coef, fill = Color)) +
             geom_bar(stat = "identity", fill = main.coef$Color) +
             scale_x_discrete(labels = main.coef$Label) +
             guides(scale = "none") + 
@@ -113,10 +124,10 @@ plot_coef <- function(species,
                   legend.text = element_text(size=16),
                   legend.title = element_blank(),
                   axis.line = element_line(colour = "black"),
-                  panel.border = element_rect(colour = "black", fill=NA, size=1)))
+                  panel.border = element_rect(colour = "black", fill=NA, size=1))
         
     }
     
-    return(coef.plot)
+    return(print(coef.plot))
     
 }
