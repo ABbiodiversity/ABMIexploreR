@@ -1,8 +1,17 @@
+<!-- badges: start -->
+
+![In Development](https://img.shields.io/badge/Status-In%20Development-yellow) 
+![Languages](https://img.shields.io/badge/Languages-R-blue)
+
+<!-- badges: end -->
+
 # ABMIexploreR
 
 > Custom Predictions using ABMI species distribution models in Alberta
 
-## Install
+## Overview
+
+## Installation
 
 ``` r
 if (!require("remotes"))
@@ -56,12 +65,13 @@ Here is the number of species by taxonomic group available in the package:
 
 ``` r
 data.frame(table(species.lookup$Taxon))
-#             Var1 Freq
-# 1     Amphibians    4
-# 2     Bryophytes  133
-# 3        Lichens  185
-# 4      SoilMites  125
-# 5 VascularPlants  462
+#           Var1 Freq
+#     Amphibians    4
+#          Birds  124
+#     Bryophytes  118
+#        Lichens  145
+#          Mites  108
+# VascularPlants  434
 ```
 
 ### Bioclimatic information
@@ -83,8 +93,8 @@ We can also view the lookup tables that define the landcover variables used in t
 
 ``` r
 # Vegetation data
-str(abmi_landcover(landcover = "vegetation"))
-# 'data.frame':	100 obs. of  5 variables:
+str(abmi_landcover(landcover = "Vegetation"))
+# 'data.frame':	91 obs. of  5 variables:
 #  $ Type    : chr  "Vegetation" "Vegetation" "Vegetation" "Vegetation" ...
 #  $ Variable: chr  "Climate" "WhiteSpruceR" "WhiteSpruce1" "WhiteSpruce2" ...
 #  $ Name    : chr  "Climate" "WhiteSpruceR" "WhiteSpruce1" "WhiteSpruce2" ...
@@ -92,8 +102,8 @@ str(abmi_landcover(landcover = "vegetation"))
 #  $ Color   : chr  NA "#9A9723" "#9A9723" "#9A9723" ...
 
 # Soil data
-str(abmi_landcover(landcover = "soil"))
-# 'data.frame':	25 obs. of  5 variables:
+str(abmi_landcover(landcover = "Soil"))
+# 'data.frame':	24 obs. of  5 variables:
 #  $ Type    : chr  "Soil" "Soil" "Soil" "Soil" ...
 #  $ Variable: chr  "Climate" "paspen" "Loamy" "SandyLoam" ...
 #  $ Name    : chr  "Climate" "pAspen" "Loamy" "SandyLoam" ...
@@ -107,19 +117,19 @@ The coefficients for both the vegetation and soil based models can be extracted 
 ``` r
 
 # Extraction of single species coeffcients for vegetation models
-single.species <- coefficient_extraction(species = "Amblystegium.serpens", model = "vegetation")
+single.species <- coefficient_extraction(species = "Amblystegium.serpens", model = "Vegetation")
 str(single.species)
-# Named num [1:99] 0.0774 0.1193 0.1885 0.2209 0.2188 ...
+# Named num [1:90] 0.0774 0.1193 0.1885 0.2209 0.2188 ...
 #  - attr(*, "names")= chr [1:99] "WhiteSpruceR" "WhiteSpruce1" "WhiteSpruce2" "WhiteSpruce3" ...
 
 # Extraction of single species coeffcients for soil models
-single.species <- coefficient_extraction(species = "Amblystegium.serpens", model = "soil")
+single.species <- coefficient_extraction(species = "Amblystegium.serpens", model = "Soil")
 str(single.species)
-# Named num [1:23] 0.0478 0.0414 0.0252 0.0458 0.0285 ...
+# Named num [1:22] 0.0478 0.0414 0.0252 0.0458 0.0285 ...
 # - attr(*, "names")= chr [1:23] "Loamy" "SandyLoam" "RapidDrain" "ClaySub" ...
 
 # Extraction of all species coeffcients          
-all.species <- coefficient_extraction(species = "All", model = "vegetation")
+all.species <- coefficient_extraction(species = "All", model = "Vegetation")
 str(all.species)
 # num [1:667, 1:99] 0.02262 0.01237 0.00528 0.01527 0.07737 ...
 # - attr(*, "dimnames")=List of 2
@@ -128,18 +138,28 @@ str(all.species)
 
 # Visualization of the vegetation models
 plot_coef(species = "Amblystegium.serpens", 
-          model = "vegetation")
+          model = "Vegetation")
 
 # Visualization of the soil models
 plot_coef(species = "Amblystegium.serpens", 
-          model = "soil")
+          model = "Soil")
 
 
 ```
 
-## Example data
+## Generating Species Predictions
 
-We provided an example data set that shows you how to organize the data:
+You need to define the species ID and (`abmi_species()$SpeciesID`) the bootstrap ID (`i`). The bootstrap ID can be between 1 and 100. Users can also define a bootstrap value of 0, which selects the representative median bootstrap iteration for that species
+
+``` r
+## define species and bootstrap id
+spp <- "Amblystegium.serpens"
+i <- 0
+```
+
+### Example data
+
+We provided an example data set that shows you how to organize the landcover data:
 
 ``` r
 ## example data to see what is needed and how it is formatted
@@ -184,17 +204,7 @@ colnames(simulated.data$simulated.soil)
 # [21] "TameP"       "HWater"      "HFor" 
 ```
 
-### Predict for a species
-
-You need to define the species ID and (`abmi_species()$SpeciesID`) the bootstrap ID (`i`). The bootstrap ID can be between 1 and 100. Users can also define a bootstrap value of 0, which selects the representative median bootstrap iteration for that species
-
-``` r
-## define species and bootstrap id
-spp <- "Amblystegium.serpens"
-i <- 0
-```
-
-#### Spatial data
+### Spatial data extraction
 
 ``` r
 ## Define the spatial coordinates and 
@@ -211,7 +221,7 @@ climate.input <- extract_climate(spatial.grid = spatial.locations,
                           
 ```
 
-#### Predictions
+### Predictions
 
 The prediction functions require composition data, i.e. giving the areas or proportions of
 different landcover types (columns) in a spatial unit (rows). The corresponding relative abundance values will be returned in a matrix format:
@@ -231,7 +241,7 @@ model.output <- species_predict(species = spp,
 
 ```
 
-#### Prediction blending
+### Prediction blending
 
 For applicable species, models can be generated using both vegetation and soil based information.
 These two models can be blended together in areas where the predictions have spatial overlap.
@@ -239,29 +249,29 @@ These two models can be blended together in areas where the predictions have spa
 ``` r
 ## Blend the predictions
 blend.pred <- blend_predict(climate = climate.input, 
-                            veg = model.output.og$veg, 
-                            soil = model.output.og$soil)
+                            veg = model.output$Vegetation, 
+                            soil = model.output$Soil)
 
 ```
-#### Prediction visualization
+### Prediction visualization
 
 For applicable species, models can be generated using both vegetation and soil based information.
 These two models can be blended together in areas where the predictions have spatial overlap.
 
 ``` r
 ## Visualize Blend the predictions
-species.pred <- as.matrix(simulated.data$simulated.climate)
+species.pred <- simulated.data$simulated.climate
 species.pred$Species <- blend.pred
 species.pred <- rast(x = species.pred,
                           type = "xyz")
 crs(species.pred) <- "EPSG:3400"
 
-plot_species(spat.raster = spatial.locations,
+plot_species(spat.raster = species.pred,
              variable = "Species")
 
 ```
 
-#### Prediction uncertainty
+### Prediction uncertainty
 
 We can also generate uncertainty estimates for each species:
 
@@ -275,19 +285,17 @@ model.output <- species_predict(species = spp,
                                    climate = climate.input, 
                                    modified = FALSE, 
                                    boot = i)
-    v <- cbind(bootstrap.matrix, model.output$veg)
+    bootstrap.matrix <- cbind(bootstrap.matrix, model.output$Vegetation)
 }
 
-t(apply(bootstrap.matrix[25:30,], 1, quantile, c(0.5, 0.05, 0.95)))
-          50%         5%        95%
-## 25 0.31590764 0.26543390 0.35751442
-## 26 0.05219450 0.03893699 0.07041478
-## 27 0.09576693 0.07895616 0.11126043
-## 28 0.04139684 0.03238818 0.05872012
-## 29 0.12563301 0.09836205 0.15970154
-## 30 0.06754963 0.05384576 0.08798115
+t(apply(bootstrap.matrix[1:5,], 1, quantile, c(0.5, 0.05, 0.95)))
+##         50%        5%       95%
+## 1 0.5139610 0.4541572 0.5672434
+## 2 0.2078696 0.1587900 0.2419546
+## 3 0.4180285 0.3991523 0.4348132
+## 4 0.3762806 0.3444155 0.4120810
+## 5 0.2520864 0.2271224 0.2793064
 ```
-
 
 ## Coefficient Modification
 
@@ -306,18 +314,103 @@ model.output <- species_predict(species = spp,
                                    boot = 0)
                                    
 blend.pred <- blend_predict(climate = climate.input, 
-                            veg = model.output.og$veg, 
-                            soil = model.output.og$soil)
+                            veg = model.output$Vegetation, 
+                            soil = model.output$Soil)
 
 # Visualize the new predictions                              
-species.pred <- as.matrix(simulated.data$simulated.climate)
+species.pred <- simulated.data$simulated.climate
 species.pred$Species <- blend.pred
 species.pred <- rast(x = species.pred,
                           type = "xyz")
 crs(species.pred) <- "EPSG:3400"
 
-plot_species(spat.raster = spatial.locations,
+plot_species(spat.raster = species.pred,
              variable = "Species")
              
 ```
 
+## Parallel Processing
+
+The `ABMIexploreR` package can be implemented in parallel processing. In order to do this, the `abmi_load_bioclimatic` and `extract_climate` need to be initialized for each core so climate information can be passed to the `species_predict` function. 
+
+``` r
+
+# Load parallel R package
+library(parallel)
+
+# Define the species list (lets use all of the bird models)
+species.list <- abmi_species()
+species.list <- species.list[species.list$Taxon == "Birds", "SpeciesID"]
+names(species.list) <- species.list
+
+# Define the number of bootstraps
+boot.iter <- 1:10
+
+# Initialize cores
+n.clusters <- 10
+core.input <- makeCluster(n.clusters)
+clusterExport(core.input, c())
+clusterEvalQ(core.input, {
+  
+  library(ABMIexploreR)
+  library(Matrix)
+  library(terra)
+  
+  # Load the landcover data
+  load(system.file("extdata", "simulated-data.rda", package="ABMIexploreR"))
+  veg.data <- simulated.data$simulated.vegetation
+  soil.data <- simulated.data$simulated.soil
+    
+  # Load bioclimatic data
+  abmi_load_bioclimatic()
+  
+  # Generate the spatial points
+  spatial.locations <- as.matrix(simulated.data$simulated.climate)
+  spatial.locations <- vect(x = spatial.locations[, c("X", "Y")],
+                            type = "points")
+  crs(spatial.locations) <- "EPSG:3400"
+
+
+  # Generate the matching spatial grid 
+  climate.grid <- extract_climate(spatial.grid = spatial.locations, 
+                            cell.id = rownames(veg.data), 
+                            reproject = FALSE)
+  
+})
+
+# Generate median bootstrap prediction across multiple species
+species.predictions <- parLapply(cl = core.input, 
+                                 X = species.list, 
+                                 function(spp) species_predict(species = spp, 
+                                                               veg = veg.data, 
+                                                               soil = soil.data, 
+                                                               climate = climate.grid, 
+                                                               modified = FALSE, 
+                                                               boot = 0))
+                                                               
+str(species.predictions)
+## List of 124
+##  $ AlderFlycatcher            :List of 2
+##   ..$ Vegetation: Named num [1:400] 0.0742 0.0056 0.0627 0.0997 0.0523 ...
+##   .. ..- attr(*, "names")= chr [1:400] "1" "2" "3" "4" ...
+##   ..$ Soil      : Named num [1:304] 0.0477 0.0413 0.0199 0.0369 0.0525 ...
+##   .. ..- attr(*, "names")= chr [1:304] "1" "2" "21" "22" ...                                                             
+# Or the 100 bootstrap predictions across a single species
+species.predictions <- parLapply(cl = core.input, 
+                                 X = boot.iter, 
+                                 function(boot) species_predict(species = "Amblystegium.serpens", 
+                                                               veg = veg.data, 
+                                                               soil = soil.data, 
+                                                               climate = climate.grid, 
+                                                               modified = FALSE, 
+                                                               boot = boot))
+str(species.predictions)
+## List of 10
+##  $ :List of 2
+##   ..$ Vegetation: Named num [1:400] 0.517 0.198 0.417 0.376 0.252 ...
+##   .. ..- attr(*, "names")= chr [1:400] "1" "2" "3" "4" ...
+##   ..$ Soil      : Named num [1:304] 0.581 0.523 0.28 0.469 0.547 ...
+##   .. ..- attr(*, "names")= chr [1:304] "1" "2" "21" "22" ...                                                              
+stopCluster(core.input)
+            
+```
