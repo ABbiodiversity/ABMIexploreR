@@ -168,7 +168,7 @@ load(system.file("extdata", "simulated-data.rda", package="ABMIexploreR"))
 ## Spatial Coordinates
 ## Formatted in EPSG: 3400
 str(simulated.data$simulated.climate)
-# 'data.frame':	400 obs. of  2 variables:
+# 'data.frame':	225 obs. of  2 variables:
 #  $ X: num  624879 625878 626877 627876 628875 ...
 #  $ Y: num  6091950 6091950 6091950 6091950 6091950 ...
 
@@ -216,7 +216,7 @@ crs(spatial.locations) <- "EPSG:3400"
 # Extract the appropriate bioclimatic data
 # Users can define unique cell names with the cell.id option
 climate.input <- extract_climate(spatial.grid = spatial.locations, 
-                          cell.id = 1:400,
+                          cell.id = 1:225,
                           reproject = FALSE)
                           
 ```
