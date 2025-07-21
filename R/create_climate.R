@@ -27,9 +27,36 @@
     UseS <- rownames(climate.grid)[climate.grid$wS > 0]
     
     # Create unique climate grids 
+    # For the current Presence/Absence Mammal models we use the same climate information
+    # Subject to change.
     if (taxon == "Mammals") {
         
-        # Need to write
+        climate.summary <- with(climate.grid, cbind(
+            Intercept = 1,
+            Easting = Easting,
+            Northing = Northing,
+            Easting2 = Easting2,
+            Northing2 = Northing2,
+            EastingNorthing = EastingNorthing,
+            pAspen = pAspen,
+            MAT = MAT,
+            FFP = FFP,
+            MWMT = MWMT,
+            EMT = EMT,
+            MAP = MAP,
+            PET = PET,
+            CMD = CMD,
+            TD = TD,
+            MAPPET = MAPPET,
+            CMDMAT = CMDMAT,
+            MAT2 = MAT2,
+            MWMT2 = MWMT2,
+            bio9 = bio9,
+            bio15 = bio15))
+        
+        rownames(climate.summary) <- rownames(climate.grid)
+        climate.summary <- list(vegetation = climate.summary[UseN, ],
+                                soil = climate.summary[UseS, ])
         
     } 
     
