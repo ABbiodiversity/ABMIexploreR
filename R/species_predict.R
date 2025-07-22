@@ -101,7 +101,7 @@ species_predict <- function(species, veg = NULL, soil = NULL,
     
     if (taxon == "Mammals") {
         
-        species.pred <- mammal_predicts(species = species, taxon = taxon, veg = veg, 
+        species.pred <- .mammal_predicts(species = species, taxon = taxon, veg = veg, 
                                         soil = soil, climate = taxon.climate, 
                                         boot = boot, modified = modified)
         

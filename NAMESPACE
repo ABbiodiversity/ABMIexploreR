@@ -2,6 +2,7 @@
 
 export(.create_climate)
 export(.get_taxon)
+export(.mammal_predicts)
 export(.terrestrial_predicts)
 export(abmi_climate)
 export(abmi_landcover)
