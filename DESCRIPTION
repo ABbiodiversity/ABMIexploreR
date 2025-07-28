@@ -12,7 +12,7 @@ Description: Decision support tool
   custom predictions based on species distribution models created by the Alberta
   Biodiversity Monitoring Institute (ABMI)
   in collaboration with the Boreal Avian Modelling (BAM) Project.
-URL: https://github.com/beallen/ABMIexploreR
+URL: https://github.com/beallen/ABMIexploreR, https://abbiodiversity.github.io/ABMIexploreR/
 BugReports: https://github.com/beallen/ABMIexploreR/issues
 License: MIT + file LICENSE
 LazyLoad: yes

@@ -13,3 +13,4 @@
 ^pkgdown$
 ^COEFS\.RData$
 ^data-raw$
+^\.github$
