@@ -107,12 +107,13 @@
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">species.lookup</span><span class="op">$</span><span class="va">Taxon</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#           Var1 Freq</span></span>
-<span><span class="co">#     Amphibians    4</span></span>
-<span><span class="co">#          Birds  124</span></span>
-<span><span class="co">#     Bryophytes  118</span></span>
-<span><span class="co">#        Lichens  145</span></span>
-<span><span class="co">#          Mites  108</span></span>
-<span><span class="co"># VascularPlants  434</span></span></code></pre></div>
+<span><span class="co"># 1     Amphibians    4</span></span>
+<span><span class="co"># 2          Birds  124</span></span>
+<span><span class="co"># 3     Bryophytes  118</span></span>
+<span><span class="co"># 4        Lichens  145</span></span>
+<span><span class="co"># 5        Mammals   15</span></span>
+<span><span class="co"># 6          Mites  108</span></span>
+<span><span class="co"># 7 VascularPlants  434</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="bioclimatic-information">Bioclimatic information<a class="anchor" aria-label="anchor" href="#bioclimatic-information"></a>
@@ -361,28 +362,31 @@
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># Load parallel R package</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">parallel</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RevolutionAnalytics/doparallel" class="external-link">doParallel</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Define the species list (lets use all of the bird models)</span></span>
 <span><span class="va">species.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/abmi_species.html">abmi_species</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">species.list</span> <span class="op">&lt;-</span> <span class="va">species.list</span><span class="op">[</span><span class="va">species.list</span><span class="op">$</span><span class="va">Taxon</span> <span class="op">==</span> <span class="st">"Birds"</span>, <span class="st">"SpeciesID"</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">species.list</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">species.list</span></span>
 <span></span>
+<span><span class="co"># Load the simulated landcover and climate data</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"simulated-data.rda"</span>, package<span class="op">=</span><span class="st">"ABMIexploreR"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
 <span><span class="co"># Define the number of bootstraps</span></span>
-<span><span class="va">boot.iter</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span></span>
+<span><span class="va">boot.iter</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fl">4</span></span>
 <span></span>
 <span><span class="co"># Initialize cores</span></span>
-<span><span class="va">n.clusters</span> <span class="op">&lt;-</span> <span class="fl">10</span></span>
-<span><span class="va">core.input</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a></span><span class="op">(</span><span class="va">n.clusters</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">clusterExport</a></span><span class="op">(</span><span class="va">core.input</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">clusterEvalQ</a></span><span class="op">(</span><span class="va">core.input</span>, <span class="op">{</span></span>
+<span><span class="va">n.clusters</span> <span class="op">&lt;-</span> <span class="fl">4</span></span>
+<span><span class="va">core.input</span> <span class="op">&lt;-</span> <span class="fu">makeCluster</span><span class="op">(</span><span class="va">n.clusters</span><span class="op">)</span></span>
+<span><span class="fu">registerDoParallel</span><span class="op">(</span><span class="va">core.input</span><span class="op">)</span></span>
+<span><span class="fu">clusterExport</span><span class="op">(</span><span class="va">core.input</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"simulated.data"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">clusterEvalQ</span><span class="op">(</span><span class="va">core.input</span>, <span class="op">{</span></span>
 <span>  </span>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/beallen/ABMIexploreR" class="external-link">ABMIexploreR</a></span><span class="op">)</span></span>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://Matrix.R-forge.R-project.org" class="external-link">Matrix</a></span><span class="op">)</span></span>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="co"># Load the landcover data</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"simulated-data.rda"</span>, package<span class="op">=</span><span class="st">"ABMIexploreR"</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">veg.data</span> <span class="op">&lt;-</span> <span class="va">simulated.data</span><span class="op">$</span><span class="va">simulated.vegetation</span></span>
 <span>  <span class="va">soil.data</span> <span class="op">&lt;-</span> <span class="va">simulated.data</span><span class="op">$</span><span class="va">simulated.soil</span></span>
 <span>    </span>
@@ -404,7 +408,7 @@
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Generate median bootstrap prediction across multiple species</span></span>
-<span><span class="va">species.predictions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">parLapply</a></span><span class="op">(</span>cl <span class="op">=</span> <span class="va">core.input</span>, </span>
+<span><span class="va">species.predictions</span> <span class="op">&lt;-</span> <span class="fu">parLapply</span><span class="op">(</span>cl <span class="op">=</span> <span class="va">core.input</span>, </span>
 <span>                                 X <span class="op">=</span> <span class="va">species.list</span>, </span>
 <span>                                 <span class="kw">function</span><span class="op">(</span><span class="va">spp</span><span class="op">)</span> <span class="fu"><a href="reference/species_predict.html">species_predict</a></span><span class="op">(</span>species <span class="op">=</span> <span class="va">spp</span>, </span>
 <span>                                                               veg <span class="op">=</span> <span class="va">veg.data</span>, </span>
@@ -420,8 +424,8 @@
 <span><span class="co">##   .. ..- attr(*, "names")= chr [1:400] "1" "2" "3" "4" ...</span></span>
 <span><span class="co">##   ..$ Soil      : Named num [1:304] 0.0477 0.0413 0.0199 0.0369 0.0525 ...</span></span>
 <span><span class="co">##   .. ..- attr(*, "names")= chr [1:304] "1" "2" "21" "22" ...                                                             </span></span>
-<span><span class="co"># Or the 100 bootstrap predictions across a single species</span></span>
-<span><span class="va">species.predictions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">parLapply</a></span><span class="op">(</span>cl <span class="op">=</span> <span class="va">core.input</span>, </span>
+<span><span class="co"># Or the bootstrap predictions across a single species</span></span>
+<span><span class="va">species.predictions</span> <span class="op">&lt;-</span> <span class="fu">parLapply</span><span class="op">(</span>cl <span class="op">=</span> <span class="va">core.input</span>, </span>
 <span>                                 X <span class="op">=</span> <span class="va">boot.iter</span>, </span>
 <span>                                 <span class="kw">function</span><span class="op">(</span><span class="va">boot</span><span class="op">)</span> <span class="fu"><a href="reference/species_predict.html">species_predict</a></span><span class="op">(</span>species <span class="op">=</span> <span class="st">"Amblystegium.serpens"</span>, </span>
 <span>                                                               veg <span class="op">=</span> <span class="va">veg.data</span>, </span>
@@ -436,7 +440,7 @@
 <span><span class="co">##   .. ..- attr(*, "names")= chr [1:400] "1" "2" "3" "4" ...</span></span>
 <span><span class="co">##   ..$ Soil      : Named num [1:304] 0.581 0.523 0.28 0.469 0.547 ...</span></span>
 <span><span class="co">##   .. ..- attr(*, "names")= chr [1:304] "1" "2" "21" "22" ...                                                              </span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">stopCluster</a></span><span class="op">(</span><span class="va">core.input</span><span class="op">)</span></span>
+<span><span class="fu">stopCluster</span><span class="op">(</span><span class="va">core.input</span><span class="op">)</span></span>
 <span>            </span></code></pre></div>
 </div>
 </div>
