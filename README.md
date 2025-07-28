@@ -66,12 +66,13 @@ Here is the number of species by taxonomic group available in the package:
 ``` r
 data.frame(table(species.lookup$Taxon))
 #           Var1 Freq
-#     Amphibians    4
-#          Birds  124
-#     Bryophytes  118
-#        Lichens  145
-#          Mites  108
-# VascularPlants  434
+# 1     Amphibians    4
+# 2          Birds  124
+# 3     Bryophytes  118
+# 4        Lichens  145
+# 5        Mammals   15
+# 6          Mites  108
+# 7 VascularPlants  434
 ```
 
 ### Bioclimatic information
@@ -336,20 +337,24 @@ The `ABMIexploreR` package can be implemented in parallel processing. In order t
 ``` r
 
 # Load parallel R package
-library(parallel)
+library(doParallel)
 
 # Define the species list (lets use all of the bird models)
 species.list <- abmi_species()
 species.list <- species.list[species.list$Taxon == "Birds", "SpeciesID"]
 names(species.list) <- species.list
 
+# Load the simulated landcover and climate data
+load(system.file("extdata", "simulated-data.rda", package="ABMIexploreR"))
+
 # Define the number of bootstraps
-boot.iter <- 1:10
+boot.iter <- 1:4
 
 # Initialize cores
-n.clusters <- 10
+n.clusters <- 4
 core.input <- makeCluster(n.clusters)
-clusterExport(core.input, c())
+registerDoParallel(core.input)
+clusterExport(core.input, c("simulated.data"))
 clusterEvalQ(core.input, {
   
   library(ABMIexploreR)
@@ -357,7 +362,6 @@ clusterEvalQ(core.input, {
   library(terra)
   
   # Load the landcover data
-  load(system.file("extdata", "simulated-data.rda", package="ABMIexploreR"))
   veg.data <- simulated.data$simulated.vegetation
   soil.data <- simulated.data$simulated.soil
     
@@ -395,7 +399,7 @@ str(species.predictions)
 ##   .. ..- attr(*, "names")= chr [1:400] "1" "2" "3" "4" ...
 ##   ..$ Soil      : Named num [1:304] 0.0477 0.0413 0.0199 0.0369 0.0525 ...
 ##   .. ..- attr(*, "names")= chr [1:304] "1" "2" "21" "22" ...                                                             
-# Or the 100 bootstrap predictions across a single species
+# Or the bootstrap predictions across a single species
 species.predictions <- parLapply(cl = core.input, 
                                  X = boot.iter, 
                                  function(boot) species_predict(species = "Amblystegium.serpens", 
