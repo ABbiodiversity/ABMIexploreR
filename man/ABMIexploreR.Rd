@@ -12,6 +12,7 @@ Decision support tool that provides an interface to enable custom predictions ba
 Useful links:
 \itemize{
   \item \url{https://github.com/beallen/ABMIexploreR}
+  \item \url{https://abbiodiversity.github.io/ABMIexploreR/}
   \item Report bugs at \url{https://github.com/beallen/ABMIexploreR/issues}
 }
 

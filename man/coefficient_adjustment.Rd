@@ -11,7 +11,7 @@ coefficient_adjustment(model, coef = NULL, value = NULL)
 
 \item{coef}{Vector of characters that the user wishes to modify.}
 
-\item{value}{User defined value to be assigned to the specified coefficients. Adjustment is made across all boostraps.}
+\item{value}{User defined value to be assigned to the specified coefficients. Adjustment is made across all bootstraps.}
 }
 \description{
 This function will adjust the stored coefficients to user defined values. 

@@ -7,7 +7,7 @@
 #' 
 #' @param model Vector defined as "Vegetation", "Soil", or "All" so the appropriate model is adjusted.
 #' @param coef Vector of characters that the user wishes to modify.
-#' @param value User defined value to be assigned to the specified coefficients. Adjustment is made across all boostraps.
+#' @param value User defined value to be assigned to the specified coefficients. Adjustment is made across all bootstraps.
 #'
 #' @import Matrix
 #'
@@ -19,6 +19,13 @@ coefficient_adjustment <- function(model, coef = NULL, value = NULL) {
     # Create a new object that contains the modified coefficients hidden to the user
     species.coefs.mod <- species.coefs
     
+    # Check that value is the same length as coef
+    if(length(coef) != length(value)) {
+        
+        stop(paste("Length of coefficients does not match length of provided values."))
+        
+    }
+
     # Loop through the modification for each taxonomic group
     for(taxon in names(species.coefs.mod)) {
         
@@ -49,8 +56,8 @@ coefficient_adjustment <- function(model, coef = NULL, value = NULL) {
         }
 
         # Soil adjustment
-        # We skip the amphibian models since none are present
-        if(taxon == "Amphibians") { next }
+        # We skip the amphibian and mammals models since none are currently present
+        if(taxon %in% c("Amphibians", "Mammals")) { next }
         
         if(model %in% c("Soil", "All")) {
             
