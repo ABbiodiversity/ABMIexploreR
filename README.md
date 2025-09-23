@@ -11,6 +11,8 @@
 
 ## Overview
 
+The R package is a decision support tool that provides an interface to enable custom predictions using the species distribution models developed by the Alberta Biodiversity Monitoring Institute (ABMI).
+
 ## Installation
 
 ``` r
@@ -417,3 +419,9 @@ str(species.predictions)
 stopCluster(core.input)
             
 ```
+
+## Acknowledgements
+
+We would like to acknowledge that this work would not be possible without the dedication of ABMI staff, both past and present. Without our field staff, geospatial experts, taxonomists, and ecologists, we would not be able to perform this work.
+
+We would also like to acknowledge Christopher Mallon (Land Change Modeller; Alberta Environment and Protected Areas) for his contributions of reviewing the repository and the development of functions.
