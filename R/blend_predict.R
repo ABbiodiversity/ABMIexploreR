@@ -33,13 +33,13 @@ blend_predict <- function(climate = NULL, veg = NULL, soil = NULL) {
     # Align the veg and soil predictions #
     ######################################
     
-    veg.pred <- data.frame(Cell = names(veg),
+    veg.pred <- data.frame(Cell = as.numeric(names(veg)),
                            veg = veg)
     
-    soil.pred <- data.frame(Cell = names(soil),
+    soil.pred <- data.frame(Cell = as.numeric(names(soil)),
                             soil = soil)
     
-    species.pred <- data.frame(Cell = rownames(climate),
+    species.pred <- data.frame(Cell = as.numeric(rownames(climate)),
                                wN = climate$wN,
                                wS = climate$wS)
     
