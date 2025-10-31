@@ -17,8 +17,10 @@
 #'
 #' @param land_cover_dataframe The dataframe with unknown ages that needs to be
 #' updated.
-#' @param nsr_age_distributions The data file that contains average age
-#' distributions by natural subregion.
+#' @param age_distribution The name of the distribution to use to fill areas of
+#' unknown ages. Options are: 'age.all.abmi', "age.all.maltman", "age.nsr.abmi",
+#' "age.nsr.maltman", "age.old.all.abmi", "age.old.all.maltman",
+#' "age.old.nsr.abmi", "age.old.nsr.maltman".
 #'
 #' @return A data frame with missing ages filled in.
 #'
