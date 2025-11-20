@@ -15,12 +15,10 @@
 #' correct order for each veg type follows this pattern: 
 #' PineR, Pine1, ..., Pine8.
 #'
-#' @param land_cover_dataframe The dataframe with unknown ages that needs to be
+#' @param land_cover The dataframe with unknown ages that needs to be
 #' updated.
-#' @param age_distribution The name of the distribution to use to fill areas of
-#' unknown ages. Options are: 'age.all.abmi', "age.all.maltman", "age.nsr.abmi",
-#' "age.nsr.maltman", "age.old.all.abmi", "age.old.all.maltman",
-#' "age.old.nsr.abmi", "age.old.nsr.maltman".
+#' @param nsr_age_distributions The data file that contains average age
+#' distributions by natural subregion.
 #'
 #' @return A data frame with missing ages filled in.
 #'
@@ -28,14 +26,12 @@
 #'
 #' @export
 #'
-fill_unknown_ages <-  function(land_cover_dataframe, age_distribution="age.old.nsr.maltman") {
+fill_unknown_ages <-  function(land_cover, age_distribution="age.old.nsr.maltman") {
     veg_types <- c("Pine", "WhiteSpruce", "Mixedwood", "Deciduous", "TreedBog")
     
     # Load age distributions
     load('data/ages-by-nsr.rda')
     all_distributions <- c('age.all.abmi', "age.all.maltman", "age.nsr.abmi", "age.nsr.maltman", "age.old.all.abmi", "age.old.all.maltman", "age.old.nsr.abmi", "age.old.nsr.maltman", "ages.list", "nsr.age.proportions")
-    to_remove <- all_distributions[!(all_distributions == age_distribution)]
-    rm(list=to_remove, envir=.GlobalEnv)
     
     age_dist <- eval(parse(text=age_distribution))
     
@@ -43,19 +39,20 @@ fill_unknown_ages <-  function(land_cover_dataframe, age_distribution="age.old.n
     
     # Type checking
     
-    if (!("data.frame" %in% class(land_cover_dataframe) || 
-          "data.table" %in% class(land_cover_dataframe))) {
-        stop("land_cover_dataframe must be a data.frame or data.table object.")
+    if (!("data.frame" %in% class(land_cover) || 
+          "data.table" %in% class(land_cover))) {
+        stop("land_cover must be a data.frame or data.table object.")
+    }
+    if (!any(class(land_cover) == "data.table") ) {
+        land_cover <- data.table::data.table(land_cover)
     }
     
     # Check for expected columns
-    missing_cols <- c()
-    for (vt in veg_types){
-        message(paste0("Checking for ", vt, " columns."))
-        expected_cols <- paste0(vt, c("R", 1:8))
-        missing <- setdiff(expected_cols, names(land_cover_dataframe))
-        missing_cols <- c(missing_cols, missing)
-    }
+    veg.col.names <- ABMIexploreR::landcover.names$Vegetation$Name
+    all.expected.cols <- unique(c("NSRNAME", veg.col.names))
+    all.expected.cols <- all.expected.cols[!(all.expected.cols %in% c("Climate", "pAspen", "SoilUnknown", "HWater"))]
+    
+    missing_cols <- setdiff(all.expected.cols, names(land_cover))
     
     if (length(missing_cols) > 0) {
         stop(paste0("Expected columns are missing: ", 
@@ -63,25 +60,10 @@ fill_unknown_ages <-  function(land_cover_dataframe, age_distribution="age.old.n
                     ". Please check the dataframe and ensure all columns are present."))
     }
     
-    if (!(any("NSRNAME" == names(land_cover_dataframe)))){
-        stop("NSRNAME not found in dataframe, please add natural subregion data for each observation.")
-    }
     
     # Ensure columns are in expected order
-    for (vt in veg_types) {
-        # Expected columns for this veg type
-        expected_cols <- paste0(vt, c("R", 1:8))
-        # Find current positions
-        current_positions <- match(expected_cols, names(land_cover_dataframe))
-        # If not in order or not together, reorder
-        if (!all(c(diff(current_positions) == 1, !is.na(current_positions)))) {
-            message(paste0("Re-ordering ", vt, " columns."))
-            # Move columns to correct positions
-            other_cols <- setdiff(names(land_cover_dataframe), expected_cols)
-            land_cover_dataframe <- land_cover_dataframe[, c(other_cols, 
-                                                             expected_cols)]
-        }
-    }
+    extras <- setdiff(names(land_cover), all.expected.cols)
+    data.table::setcolorder(land_cover, c(all.expected.cols, extras))
     
     # Clean the age distributions to ensure the names of the columns match
     message("Updating age distributions...")
@@ -110,35 +92,33 @@ fill_unknown_ages <-  function(land_cover_dataframe, age_distribution="age.old.n
     }
     
     message("Reclassifying areas of unknown age...")
-    if (!any(class(land_cover_dataframe) == "data.table") ) {
-        land_cover_dataframe <- data.table::data.table(land_cover_dataframe)
-    }
+    
     for (vt in veg_types) {
-        if (any(paste0(vt, "U") == colnames(land_cover_dataframe))) {
+        if (any(paste0(vt, "U") == colnames(land_cover))) {
             message(paste0("Updating ages for ", vt, "..."))
             
             # Get column indices
             veg_type_first_col <- match(paste0(vt, "R"), 
-                                        colnames(land_cover_dataframe))
+                                        colnames(land_cover))
             veg_type_last_col <- match(paste0(vt, "8"), 
-                                       colnames(land_cover_dataframe))
-            nsr_name_col <- match("NSRNAME", colnames(land_cover_dataframe))
+                                       colnames(land_cover))
+            nsr_name_col <- match("NSRNAME", colnames(land_cover))
             veg_type_unknown_age_col = match(paste0(vt, "U"), 
-                                             colnames(land_cover_dataframe))
+                                             colnames(land_cover))
             
             # Check if there are any unknown areas
-            if (sum(land_cover_dataframe[[veg_type_unknown_age_col]]) > 0) {
+            if (sum(land_cover[[veg_type_unknown_age_col]]) > 0) {
                 # Get a subset of the data table
                 cols <- c(nsr_name_col, veg_type_unknown_age_col)
-                unknown_veg <- land_cover_dataframe[get(paste0(vt, "U")) > 0, 
-                                                    ..cols]
+                unknown_veg <- land_cover[get(paste0(vt, "U")) > 0, 
+                                          ..cols]
                 names(unknown_veg) <- c("NSRNAME", "U")
                 
                 # Grab the assumed distribution
                 raw_nsr_distribution <- data.table::as.data.table(
                     nsr_age_distributions[[vt]], keep.rownames="NSRNAME"
-                    )
-                print(head(raw_nsr_distribution))
+                )
+                #print(head(raw_nsr_distribution))
                 
                 # Join the distributions to the cells by NSRNAME
                 nsr_distribution_by_cell <- 
@@ -156,15 +136,15 @@ fill_unknown_ages <-  function(land_cover_dataframe, age_distribution="age.old.n
                 
                 # Update the dataframe with the original + new area
                 column_names <- names(distributions)
-                rows_to_update <- land_cover_dataframe[[paste0(vt, "U")]] > 0
+                rows_to_update <- land_cover[[paste0(vt, "U")]] > 0
                 for (col_name in column_names) {
-                    land_cover_dataframe[rows_to_update, (col_name) := 
-                                             get(col_name) + 
-                                             distributions_by_cell[[col_name]]]
+                    land_cover[rows_to_update, (col_name) := 
+                                   get(col_name) + 
+                                   distributions_by_cell[[col_name]]]
                 }
                 
                 # Set original unknown areas to zero
-                land_cover_dataframe[, (paste0(vt, "U")) := 0]
+                land_cover[, (paste0(vt, "U")) := 0]
                 
                 
             } else {
@@ -172,5 +152,5 @@ fill_unknown_ages <-  function(land_cover_dataframe, age_distribution="age.old.n
             }
         }
     }
-    return(as.data.frame(land_cover_dataframe))
+    return(as.data.frame(land_cover))
 }
