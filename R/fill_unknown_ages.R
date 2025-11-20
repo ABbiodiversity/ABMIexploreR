@@ -85,7 +85,6 @@ fill_unknown_ages <-  function(land_cover_dataframe, age_distribution="age.old.n
     
     # Clean the age distributions to ensure the names of the columns match
     message("Updating age distributions...")
-    nsr_age_distributions <- nsr_age_distributions$reference
     
     # Replace "Decid" with "Deciduous" in column names
     if (any("Decid" == names(nsr_age_distributions))){
