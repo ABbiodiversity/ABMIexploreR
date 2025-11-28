@@ -33,6 +33,8 @@ blend_predict <- function(climate = NULL, veg = NULL, soil = NULL) {
     # Align the veg and soil predictions #
     ######################################
     
+    cell.order <- rownames(climate)
+    
     veg.pred <- data.frame(Cell = names(veg),
                            veg = veg)
     
@@ -48,9 +50,10 @@ blend_predict <- function(climate = NULL, veg = NULL, soil = NULL) {
     species.pred[is.na(species.pred)] <- 0
     cell.names <- species.pred$Cell
     
-    # Create the blended prediction and return
+    # Create the blended prediction and sort based on the original order
     species.pred <- (species.pred$wN * species.pred$veg) + (species.pred$wS * species.pred$soil)
     names(species.pred) <- cell.names
+    species.pred <- species.pred[cell.order]
     
     # Return the prediction
     return(species.pred)
