@@ -287,10 +287,22 @@
 <span>                            soil <span class="op">=</span> <span class="va">model.output</span><span class="op">$</span><span class="va">Soil</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
+<h3 id="prediction-truncation">Prediction truncation<a class="anchor" aria-label="anchor" href="#prediction-truncation"></a>
+</h3>
+<p>As with any predictive model, we can observe outlier predictions based on the combination of vegetation, soil, and climate data present within a cell. To mitigate the impacts of outliers on summaries, we have provided a function which truncates the predictions based on predefined quantiles. In general, most species have a threshold using the 0.999 quantile of the distribution provided. Thresholds for each species can be found in the abmi_species function (<code>abmi_species()$Threshold</code>).</p>
+<p>If you have made predictions across two time periods, we recommend providing both set of predictions to the function (<code>current</code> and <code>reference</code>) so the truncation is applied equally across the entire set of predictions.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co">## define species and bootstrap id</span></span>
+<span><span class="va">spp</span> <span class="op">&lt;-</span> <span class="st">"Amblystegium.serpens"</span></span>
+<span></span>
+<span><span class="va">truncated.pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/truncate_predict.html">truncate_predict</a></span><span class="op">(</span><span class="va">spp</span>, current <span class="op">=</span> <span class="va">blend.pred</span>, reference <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
 <h3 id="prediction-visualization">Prediction visualization<a class="anchor" aria-label="anchor" href="#prediction-visualization"></a>
 </h3>
 <p>For applicable species, models can be generated using both vegetation and soil based information. These two models can be blended together in areas where the predictions have spatial overlap.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Visualize Blend the predictions</span></span>
 <span><span class="va">species.pred</span> <span class="op">&lt;-</span> <span class="va">simulated.data</span><span class="op">$</span><span class="va">simulated.climate</span></span>
 <span><span class="va">species.pred</span><span class="op">$</span><span class="va">Species</span> <span class="op">&lt;-</span> <span class="va">blend.pred</span></span>
@@ -305,7 +317,7 @@
 <h3 id="prediction-uncertainty">Prediction uncertainty<a class="anchor" aria-label="anchor" href="#prediction-uncertainty"></a>
 </h3>
 <p>We can also generate uncertainty estimates for each species:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bootstrap.matrix</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
 <span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span> <span class="op">{</span></span>
@@ -331,7 +343,7 @@
 <h2 id="coefficient-modification">Coefficient Modification<a class="anchor" aria-label="anchor" href="#coefficient-modification"></a>
 </h2>
 <p>We recommend that users do not modify the coefficients that are available in this package. However, there are circumstances where users may wish to fix specific habitat coefficients to 0. If the coefficients are modified, users will need to include the <code>TRUE</code> flag for the <code>modified</code> option in the <code>species_predict</code> function. Coefficient adjustments are applied to all bootstrap iterations and across all species.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># Create the adjusted coefficients</span></span>
 <span><span class="fu"><a href="reference/coefficient_adjustment.html">coefficient_adjustment</a></span><span class="op">(</span>model <span class="op">=</span> <span class="st">"Vegetation"</span>, coef <span class="op">=</span> <span class="st">"Crop"</span>, value <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
@@ -361,7 +373,7 @@
 <h2 id="parallel-processing">Parallel Processing<a class="anchor" aria-label="anchor" href="#parallel-processing"></a>
 </h2>
 <p>The <code>ABMIexploreR</code> package can be implemented in parallel processing. In order to do this, the <code>abmi_load_bioclimatic</code> and <code>extract_climate</code> need to be initialized for each core so climate information can be passed to the <code>species_predict</code> function.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># Load parallel R package</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RevolutionAnalytics/doparallel" class="external-link">doParallel</a></span><span class="op">)</span></span>
@@ -496,7 +508,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>
