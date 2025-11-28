@@ -255,6 +255,22 @@ blend.pred <- blend_predict(climate = climate.input,
                             soil = model.output$Soil)
 
 ```
+### Prediction truncation
+
+As with any predictive model, we can observe outlier predictions based on the combination of vegetation, soil, and climate data present within a cell. To mitigate the impacts of outliers on summaries, we have provided a function which truncates the predictions based on predefined quantiles. In general, most species have a threshold using the 0.999 quantile of the distribution provided. Thresholds for each species can be found in the abmi_species function (`abmi_species()$Threshold`). 
+
+If you have made predictions across two time periods, we recommend providing both set of predictions to the function (`current` and `reference`) so the truncation is applied equally across the entire set of predictions.
+
+``` r
+
+## define species and bootstrap id
+spp <- "Amblystegium.serpens"
+
+truncated.pred <- truncate_predict(spp, current = blend.pred, reference = NULL)
+
+```
+
+
 ### Prediction visualization
 
 For applicable species, models can be generated using both vegetation and soil based information.
