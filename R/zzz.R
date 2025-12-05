@@ -1,0 +1,1 @@
+utils::globalVariables(c(":=", ".N", ".SD", ".I", ".GRP")) # from data.table 
