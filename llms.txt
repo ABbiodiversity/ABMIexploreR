@@ -513,6 +513,8 @@ of reviewing the repository and the development of functions.
   : Terrestrial predictions
 - [`extract_climate()`](https://abbiodiversity.github.io/ABMIexploreR/reference/extract_climate.md)
   : Extract climate
+- [`fill_unknown_ages()`](https://abbiodiversity.github.io/ABMIexploreR/reference/fill_unknown_ages.md)
+  : Fill Unknown Ages
 - [`inv_link_function`](https://abbiodiversity.github.io/ABMIexploreR/reference/inv_link_function.md)
   : model-inverse-link-functions
 - [`landcover.names`](https://abbiodiversity.github.io/ABMIexploreR/reference/landcover.names.md)
