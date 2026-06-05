@@ -90,8 +90,8 @@ species_predict <- function(species, veg = NULL, soil = NULL,
     # Align veg with climate data #
     ###############################
     
-    veg <- veg[rownames(taxon.climate$vegetation), ]
-    soil <- soil[rownames(taxon.climate$soil), ]
+    veg <- veg[taxon.climate$Vegetation, ]
+    soil <- soil[taxon.climate$Soil, ]
     
     ###########################
     # Define prediction model #
