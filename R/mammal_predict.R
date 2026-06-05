@@ -75,12 +75,34 @@
     }
     
     # Define link and inverse link functions
-    inv_link <- inv_link_function[[taxon]]
-    link <- link_function[[taxon]]
+    # These are separate for the total abundance and climate
+    inv_link_climate <- inv_link_function[[taxon]]$Climate
+    link_climate <- link_function[[taxon]]$Climate
+    
+    inv_link_abundance <- inv_link_function[[taxon]]$TotalAbundance
+    link_abundance <- link_function[[taxon]]$TotalAbundance
     
     # Define blank object to be returned to user
     veg.pred <- NULL
     soil.pred <- NULL
+    
+    #######################################
+    # Create the global bioclimatic model #
+    #######################################
+    
+    # Standardize the climate data
+    climate <- climate$Climate
+    climate.global <- as.matrix(climate[, names(species.climate)])
+    climate.coef <- species.climate[colnames(climate.global)]
+    
+    # Predict space/climate component
+    climate.global <- matrix(inv_link_climate(drop(climate.global %*% climate.coef)), ncol = 1,
+                           dimnames = list(rownames(climate.global), "Climate"))
+    
+    # Truncate climate prediction
+    climate.global <- ifelse(climate.global >= quantile(climate.global, 0.99),
+                           quantile(climate.global, 0.99),
+                           climate.global)
     
     #################################################
     # Perform the separate veg and soil predictions #
@@ -89,18 +111,8 @@
     # Identify if a vegetation prediction can be made
     if(!is.null(veg) & !is.null(species.veg)) {
         
-        # Standardize the climate data
-        climate.veg <- as.matrix(climate$vegetation[, names(species.climate)])
-        climate.coef <- species.climate[colnames(climate.veg)]
-        
-        # Predict space/climate component
-        climate.pred <- matrix(inv_link(drop(climate.veg %*% climate.coef)), ncol = 1,
-                               dimnames = list(rownames(climate.veg), "Climate"))
-        
-        # Truncate climate prediction
-        climate.pred <- ifelse(climate.pred >= quantile(climate.pred, 0.99),
-                               quantile(climate.pred, 0.99),
-                               climate.pred)
+        # Subset the climate data to the region of interest
+        climate.pred <- climate.global[rownames(veg), ]
         
         # Use this to predict the joint climate contribution
         climate.pred <- (climate.pred * species.veg["Climate"])
@@ -113,27 +125,20 @@
         
         # Prediction
         veg.coef <- t(t(climate.matrix) + veg.coef)
-        veg.pred <- rowSums(veg * inv_link(veg.coef))
+        veg.pred <- rowSums(veg * inv_link_abundance(veg.coef))
         
     }
     
-    # Identify if vegetation or soil based models
+    # Identify if soil prediction can be made
     if(!is.null(soil) & !is.null(species.soil)) {
         
-        # Standardize the climate data
-        climate.soil <- as.matrix(climate$soil[, names(species.climate)])
-        climate.coef <- species.climate[colnames(climate.soil)]
+        # Calculate the pAspen component
+        paspen.pred <- matrix(climate[, "pAspen"], ncol = 1,
+                              dimnames = list(rownames(climate), "pAspen"))
         
-        # Predict space/climate component
-        climate.pred <- matrix(inv_link(drop(climate.soil %*% climate.coef)), ncol = 1,
-                               dimnames = list(rownames(climate.soil), "Climate"))
-        paspen.pred <- matrix(climate$soil[, "pAspen"], ncol = 1,
-                              dimnames = list(rownames(climate$soil), "pAspen"))
-        
-        # Truncate climate prediction
-        climate.pred <- ifelse(climate.pred >= quantile(climate.pred, 0.99),
-                               quantile(climate.pred, 0.99),
-                               climate.pred)
+        # Subset the climate and pAspen data to the region of interest
+        climate.pred <- climate.global[rownames(soil), ]
+        paspen.pred <- paspen.pred[rownames(soil), ]
         
         # Use these to predict the joint climate contribution
         climate.pred <- (climate.pred * species.soil["Climate"])
@@ -144,7 +149,7 @@
         
         # Perform the joint prediction
         soil.coef <- t(t(climate.matrix) + soil.coef)
-        soil.pred <- rowSums(soil * inv_link(soil.coef))
+        soil.pred <- rowSums(soil * inv_link_abundance(soil.coef))
         
         # Garbage collect
         gc()
