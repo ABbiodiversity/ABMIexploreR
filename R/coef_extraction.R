@@ -47,7 +47,16 @@ coefficient_extraction <- function(species, model = NULL) {
         coef.template <- coef.template[!(names(coef.template) %in% c("Climate", "pAspen"))]
 
         # Backtransform coefficients based on model type
-        inv_link <- inv_link_function[[taxon]]
+        if(taxon == "Mammals") {
+            
+            inv_link <- inv_link_function[[taxon]]$TotalAbundance
+            
+        } else {
+            
+            inv_link <- inv_link_function[[taxon]]
+            
+        }
+        
         coef.template <- inv_link(coef.template)
         
         # Format
