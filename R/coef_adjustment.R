@@ -30,7 +30,15 @@ coefficient_adjustment <- function(model, coef = NULL, value = NULL) {
     for(taxon in names(species.coefs.mod)) {
         
         # Define the linkid
-        link.fun <- link_function[[taxon]]
+        if(taxon == "Mammals") {
+            
+            link.fun <- link_function[[taxon]]$TotalAbundance
+            
+        } else {
+            
+            link.fun <- link_function[[taxon]]
+            
+        }
         
         # Vegetation adjustment
         if(model %in% c("Vegetation", "All")) {
@@ -56,8 +64,8 @@ coefficient_adjustment <- function(model, coef = NULL, value = NULL) {
         }
 
         # Soil adjustment
-        # We skip the amphibian and mammals models since none are currently present
-        if(taxon %in% c("Amphibians", "Mammals")) { next }
+        # We skip the amphibian models since none are currently present
+        if(taxon %in% c("Amphibians")) { next }
         
         if(model %in% c("Soil", "All")) {
             
