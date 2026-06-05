@@ -22,7 +22,7 @@
         
     }
     
-    # Determine which pixels fall within the vegetation and soil model regions
+    # # Determine which pixels fall within the vegetation and soil model regions
     UseN <- rownames(climate.grid)[climate.grid$wN > 0]
     UseS <- rownames(climate.grid)[climate.grid$wS > 0]
     
@@ -55,8 +55,6 @@
             bio15 = bio15))
         
         rownames(climate.summary) <- rownames(climate.grid)
-        climate.summary <- list(vegetation = climate.summary[UseN, ],
-                                soil = climate.summary[UseS, ])
         
     } 
     
@@ -86,11 +84,12 @@
             bio15 = bio15))
         
         rownames(climate.summary) <- rownames(climate.grid)
-        climate.summary <- list(vegetation = climate.summary[UseN, ],
-                                soil = climate.summary[UseS, ])
         
     } 
     
+    climate.summary <- list(Climate = climate.summary,
+                            Soil = UseS,
+                            Vegetation = UseN)
     gc()
     
     return(climate.summary)
