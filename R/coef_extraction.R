@@ -43,13 +43,23 @@ coefficient_extraction <- function(species, model = NULL) {
         taxon <- species.lookup[species.lookup$SpeciesID %in% species.id, "Taxon"]
         
         # Extract the coefficient table
-        coef.template <- species.coefs[[taxon]][[model]][species.id, , boot]
+        # If mammals, we need to select the Total abundance
+        if(taxon == "Mammals") {
+            
+            coef.template <- species.coefs[[taxon]][[model]][["TA"]][species.id, , boot]
+            
+        } else {
+            
+            coef.template <- species.coefs[[taxon]][[model]][species.id, , boot]
+            
+        }
+        
         coef.template <- coef.template[!(names(coef.template) %in% c("Climate", "pAspen"))]
 
         # Backtransform coefficients based on model type
         if(taxon == "Mammals") {
             
-            inv_link <- inv_link_function[[taxon]]$TotalAbundance
+            inv_link <- inv_link_function[[taxon]]$Gamma
             
         } else {
             

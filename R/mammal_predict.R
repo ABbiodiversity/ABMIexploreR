@@ -54,33 +54,41 @@
         
     }
     
-    if(species %in% rownames(COEFS[[taxon]]$Vegetation)) {
+    if(species %in% rownames(COEFS[[taxon]]$Vegetation$PA)) {
         
-        species.veg <- COEFS[[taxon]]$Vegetation[species,,boot]
+        species.veg <- COEFS[[taxon]]$Vegetation$PA[species,,boot]
+        species.veg.agp <- COEFS[[taxon]]$Vegetation$AGP[species,,boot]
+        species.veg.ta <- COEFS[[taxon]]$Vegetation$TA[species,,boot]
         
     } else {
         
         species.veg <- NULL
+        species.veg.agp <- NULL
+        species.veg.ta <- NULL
         
     }
     
-    if(species %in% rownames(COEFS[[taxon]]$Soil)) {
+    if(species %in% rownames(COEFS[[taxon]]$Soil$PA)) {
         
-        species.soil <- COEFS[[taxon]]$Soil[species,,boot]
+        species.soil <- COEFS[[taxon]]$Soil$PA[species,,boot]
+        species.soil.agp <- COEFS[[taxon]]$Soil$AGP[species,,boot]
+        species.soil.ta <- COEFS[[taxon]]$Soil$TA[species,,boot]
         
     } else {
         
         species.soil <- NULL
+        species.soil.agp <- NULL
+        species.soil.ta <- NULL
         
     }
     
     # Define link and inverse link functions
     # These are separate for the total abundance and climate
-    inv_link_climate <- inv_link_function[[taxon]]$Climate
-    link_climate <- link_function[[taxon]]$Climate
+    inv_link_pa <- inv_link_function[[taxon]]$Binomial
+    link_pa <- link_function[[taxon]]$Binomial
     
-    inv_link_abundance <- inv_link_function[[taxon]]$TotalAbundance
-    link_abundance <- link_function[[taxon]]$TotalAbundance
+    inv_link_abundance <- inv_link_function[[taxon]]$Gamma
+    link_abundance <- link_function[[taxon]]$Gamma
     
     # Define blank object to be returned to user
     veg.pred <- NULL
@@ -96,7 +104,7 @@
     climate.coef <- species.climate[colnames(climate.global)]
     
     # Predict space/climate component
-    climate.global <- matrix(inv_link_climate(drop(climate.global %*% climate.coef)), ncol = 1,
+    climate.global <- matrix(inv_link_pa(drop(climate.global %*% climate.coef)), ncol = 1,
                            dimnames = list(rownames(climate.global), "Climate"))
     
     # Truncate climate prediction
@@ -115,17 +123,28 @@
         climate.pred <- climate.global[rownames(veg), ]
         
         # Use this to predict the joint climate contribution
+        # Presence Absence
         climate.pred <- (climate.pred * species.veg["Climate"])
         
         # Using these prediction, create a matrix and get the climate adjusted veg coefficients
         climate.matrix <- matrix(climate.pred, nrow = nrow(veg), ncol = ncol(veg))
         
-        # Standardize the vegetation coefficients (might not be needed)
+        # Standardize the vegetation coefficients
+        # PA
         veg.coef <- species.veg[colnames(veg)]
         
+        # AGP is derived from Total Adundance / Presence Absence
+        # This is because the Total Abundance and Presence Absence coefficients
+        # have been standardized using a Observed/Predicted.
+        # The stored AGP coefficients have not been adjusted but are required to
+        # isolate the pAspen coefficient in the south model.
+        veg.coef.agp <- inv_link_abundance(species.veg.ta[names(veg.coef)]) / inv_link_pa(veg.coef)
+        
+        # Multiple AGP by PA to calculate the new climate modified joint coefficients
+        veg.coef <- t(inv_link_pa(t(climate.matrix) + veg.coef) * veg.coef.agp)
+        
         # Prediction
-        veg.coef <- t(t(climate.matrix) + veg.coef)
-        veg.pred <- rowSums(veg * inv_link_abundance(veg.coef))
+        veg.pred <- rowSums(veg * veg.coef)
         
     }
     
@@ -133,23 +152,47 @@
     if(!is.null(soil) & !is.null(species.soil)) {
         
         # Calculate the pAspen component
-        paspen.pred <- matrix(climate[, "pAspen"], ncol = 1,
-                              dimnames = list(rownames(climate), "pAspen"))
+        paspen.global <- matrix(climate[, "pAspen"], ncol = 1,
+                                dimnames = list(rownames(climate), "pAspen"))
         
         # Subset the climate and pAspen data to the region of interest
         climate.pred <- climate.global[rownames(soil), ]
-        paspen.pred <- paspen.pred[rownames(soil), ]
+        paspen.global <- paspen.global[rownames(soil), ]
         
         # Use these to predict the joint climate contribution
         climate.pred <- (climate.pred * species.soil["Climate"])
-        paspen.pred <- (paspen.pred * species.soil["pAspen"])
-        climate.matrix <- matrix(climate.pred + paspen.pred, nrow = nrow(soil), ncol = ncol(soil))
         
+        # PA pAspen
+        paspen.pa.pred <- (paspen.global * species.soil["pAspen"])
+        
+        # AGP pAspen
+        paspen.agp.pred <- inv_link_abundance(paspen.global * species.soil.agp["pAspen"])
+        
+        # Create the joint PA climate and paspen
+        climate.matrix <- matrix(climate.pred + paspen.pa.pred, nrow = nrow(soil), ncol = ncol(soil))
+        
+        # Create the AGP paspen matrix
+        paspen.agp.matrix <- matrix(paspen.agp.pred, nrow = nrow(soil), ncol = ncol(soil))
+        
+        # Standardize the soil coefficients
+        # PA
         soil.coef <- species.soil[colnames(soil)]
         
-        # Perform the joint prediction
-        soil.coef <- t(t(climate.matrix) + soil.coef)
-        soil.pred <- rowSums(soil * inv_link_abundance(soil.coef))
+        # AGP is derived from Total Adundance / Presence Absence
+        # This is because the Total Abundance and Presence Absence coefficients
+        # have been standardized using a Observed/Predicted.
+        # The stored AGP coefficients have not been adjusted but are required to
+        # isolate the pAspen coefficient in the south model.
+        soil.coef.agp <- link_abundance(inv_link_abundance(species.soil.ta[names(soil.coef)]) / inv_link_pa(soil.coef))
+        
+        # Multiple AGP by PA to calculate the new climate modified joint coefficients
+        # We add the agp.paspen value to modified agp coefficients otherwise
+        # if agp paspen == 0 we get 0
+        soil.coef <- t(inv_link_pa(t(climate.matrix) + soil.coef) * 
+                           inv_link_abundance(t(paspen.agp.matrix) * soil.coef.agp))
+        
+        # Prediction
+        soil.pred <- rowSums(soil * soil.coef)
         
         # Garbage collect
         gc()
