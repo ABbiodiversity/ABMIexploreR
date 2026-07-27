@@ -14,6 +14,7 @@ developed by the Alberta Biodiversity Monitoring Institute (ABMI).
 ## Installation
 
 ``` r
+
 if (!require("remotes"))
     install.packages("remotes")
 remotes::install_github("ABbiodiversity/ABMIexploreR")
@@ -23,6 +24,7 @@ The bioclimatic rasters are downloaded alongside the package, but need
 to be loaded into memory before users can make predictions.
 
 ``` r
+
 library(ABMIexploreR)
 
 abmi_load_bioclimatic()
@@ -39,6 +41,7 @@ abmi_species() function. The `SpeciesID` attribute
 functions.
 
 ``` r
+
 species.lookup <- abmi_species()
 str(species.lookup)
 # 'data.frame': 948 obs. of  21 variables:
@@ -69,6 +72,7 @@ Here is the number of species by taxonomic group available in the
 package:
 
 ``` r
+
 data.frame(table(species.lookup$Taxon))
 #           Var1 Freq
 # 1     Amphibians    4
@@ -87,6 +91,7 @@ as both a lookup table, or visualized to see the spatial distribution of
 these variables across Alberta.
 
 ``` r
+
 # Bioclimatic data
 str(abmi_climate())
 # 'data.frame': 20 obs. of  2 variables:
@@ -103,6 +108,7 @@ used in the two types of models available in this package (vegetation
 and soil).
 
 ``` r
+
 # Vegetation data
 str(abmi_landcover(landcover = "Vegetation"))
 # 'data.frame': 91 obs. of  5 variables:
@@ -132,6 +138,7 @@ functions only produce the median bootstrap run that best represents the
 species.
 
 ``` r
+
 
 # Extraction of single species coeffcients for vegetation models
 single.species <- coefficient_extraction(species = "Amblystegium.serpens", model = "Vegetation")
@@ -175,6 +182,7 @@ We provided an example data set that shows you how to organize the
 landcover data:
 
 ``` r
+
 ## example data to see what is needed and how it is formatted
 load(system.file("extdata", "simulated-data.rda", package="ABMIexploreR"))
 
@@ -220,6 +228,7 @@ colnames(simulated.data$simulated.soil)
 ### Spatial data extraction
 
 ``` r
+
 ## Define the spatial coordinates and 
 spatial.locations <- as.matrix(simulated.data$simulated.climate)
 spatial.locations <- vect(x = spatial.locations[, c("X", "Y")],
@@ -242,6 +251,7 @@ or proportions of different landcover types (columns) in a spatial unit
 a matrix format:
 
 ``` r
+
 
 ## define species and bootstrap id
 spp <- "Amblystegium.serpens"
@@ -267,6 +277,7 @@ and soil based information. These two models can be blended together in
 areas where the predictions have spatial overlap.
 
 ``` r
+
 ## Blend the predictions
 blend.pred <- blend_predict(climate = climate.input, 
                             veg = model.output$Vegetation, 
@@ -290,6 +301,7 @@ of predictions.
 
 ``` r
 
+
 ## define species and bootstrap id
 spp <- "Amblystegium.serpens"
 
@@ -303,6 +315,7 @@ and soil based information. These two models can be blended together in
 areas where the predictions have spatial overlap.
 
 ``` r
+
 ## Visualize Blend the predictions
 species.pred <- simulated.data$simulated.climate
 species.pred$Species <- blend.pred
@@ -319,6 +332,7 @@ plot_species(spat.raster = species.pred,
 We can also generate uncertainty estimates for each species:
 
 ``` r
+
 bootstrap.matrix <- NULL
 
 for (i in 1:20) {
@@ -351,6 +365,7 @@ adjustments are applied to all bootstrap iterations and across all
 species.
 
 ``` r
+
 
 # Create the adjusted coefficients
 coefficient_adjustment(model = "Vegetation", coef = "Crop", value = 0)
@@ -385,6 +400,7 @@ to be initialized for each core so climate information can be passed to
 the `species_predict` function.
 
 ``` r
+
 
 # Load parallel R package
 library(doParallel)
