@@ -436,6 +436,11 @@ stopCluster(core.input)
             
 ```
 
+## Citation
+
+Alberta Biodiversity Monitoring Institute. 2026. ABMIexploreR, Version 1.0 2026-07-31. Alberta Biodiversity Monitoring Institute,
+Alberta, Canada. GitHub Repository. https://github.com/ABbiodiversity/ABMIexploreR
+
 ## Acknowledgements
 
 We would like to acknowledge that this work would not be possible without the dedication of ABMI staff, both past and present. Without our field staff, geospatial experts, taxonomists, and ecologists, we would not be able to perform this work.
